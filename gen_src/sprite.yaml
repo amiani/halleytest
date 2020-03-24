@@ -18,8 +18,7 @@ system:
   name: SpriteRender
   families:
   - sprite:
-    - Position: read
-    - SpritePositionOverride: optional read
+    - Body: read
     - Sprite: write
   - text:
     - Position: read

@@ -1,0 +1,12 @@
+---
+timelines:
+  fixedUpdate:
+  - Physics
+
+  variableUpdate:
+  - Camera
+
+  render:
+  - SpriteRender
+  - CameraRender
+...

@@ -9,8 +9,8 @@ public:
 		for (auto& e: spriteFamily) {
 			auto& sprite = e.sprite.sprite;
 			if (sprite.hasMaterial()) {
-				const Vector2f basePos = e.position.position;
-				const Vector2f pos = e.spritePositionOverride.hasValue() ? e.spritePositionOverride.get().position.value_or(basePos) : basePos;
+        const cp::Vect bodyPos = e.body.body->getPosition();
+				const Vector2f pos = Vector2f(bodyPos.x, bodyPos.y);
 				sprite.setPos(pos);
 				getPainterService().spritePainter.add(sprite, e.sprite.mask, e.sprite.layer, pos.y);
 			}

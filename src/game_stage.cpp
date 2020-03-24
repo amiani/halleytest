@@ -25,9 +25,12 @@ void GameStage::init()
 	world->addService(painterService);
 	world->addService(game.getInputService());
 
+  const cp::Float mass = 4;
+  const cp::Float radius = 10;
+  const cp::Float moment = cp::momentForCircle(mass, 0, radius);
 	world->createEntity()
-	  .addComponent(BodyComponent())
-	  .addComponent(ShapeComponent(std::make_shared<cp::CircleShape>(nullptr, 10)))
+	  .addComponent(BodyComponent(std::make_shared<cp::Body>(mass, moment)))
+	  .addComponent(ShapeComponent(std::make_shared<cp::CircleShape>(nullptr, radius)))
 	  .addComponent(SpriteComponent(Sprite().setImage(getResources(), "large_grey_01.png"), 0, 1))
 		.addComponent(CameraComponent(game.getZoom(), Colour4f(0.0f, 0.0f, 0.0f), 1, 0));
 }
