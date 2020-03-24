@@ -1,8 +1,11 @@
+#include <gen/cpp/components/shape_component.h>
 #include "game_stage.h"
 #include "registry.h"
 #include "components/sprite_component.h"
-#include "components/position_component.h"
-#include "components/camera_component.h"
+#include "components/position_component.h" 
+ #include "components/camera_component.h"
+#include "components/body_component.h"
+#include "components/shape_component.h"
 //#include "sprite_layers.h"
 #include "game.h"
 #include "title_stage.h"
@@ -11,19 +14,21 @@ GameStage::GameStage()
 {
 }
 
+
 void GameStage::init()
 {
 	auto& game = dynamic_cast<HalleyTestGame&>(getGame());
 	
 	painterService = std::make_shared<PainterService>();
-	rhythmService = std::make_shared<RhythmService>();
 
 	world = createWorld("stages/game_stage", createSystem, createComponent);
 	world->addService(painterService);
 	world->addService(game.getInputService());
 
 	world->createEntity()
-		.addComponent(PositionComponent(Vector2f(192.0f, 108.0f)))
+	  .addComponent(BodyComponent())
+	  .addComponent(ShapeComponent(std::make_shared<cp::CircleShape>(nullptr, 10)))
+	  .addComponent(SpriteComponent(Sprite().setImage(getResources(), "large_grey_01.png"), 0, 1))
 		.addComponent(CameraComponent(game.getZoom(), Colour4f(0.0f, 0.0f, 0.0f), 1, 0));
 }
 

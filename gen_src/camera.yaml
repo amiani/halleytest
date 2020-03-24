@@ -5,7 +5,7 @@ system:
   families:
   - camera:
     - Camera: read
-    - Position: read
+    - Body: read
   method: render
   strategy: global
   services:

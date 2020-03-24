@@ -1,6 +1,6 @@
 #include "game.h"
-//#include "game_stage.h"
-#include "title_stage.h"
+#include "game_stage.h"
+//#include "title_stage.h"
 #include "chipmunk.hpp"
 #include "torch/torch.h"
 
@@ -81,7 +81,7 @@ std::unique_ptr<Stage> HalleyTestGame::startGame(const HalleyAPI* api)
 
 	inputService = std::make_shared<InputService>(*api->input);
 
-	return std::make_unique<TitleStage>();
+	return std::make_unique<GameStage>();
 }
 
 std::shared_ptr<InputService> HalleyTestGame::getInputService() const

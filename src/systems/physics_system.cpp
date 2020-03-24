@@ -8,16 +8,19 @@ public:
 
     void onEntitiesAdded(Halley::Span<BodiesFamily> es) {
       for (auto &e : es) {
+        e.shape.shape->setBody(e.body.body);
         space.add(e.body.body);
       }
     }
 
     void onEntitiesRemoved(Halley::Span<BodiesFamily> es) {
       for (auto& e : es) {
+        space.remove(e.body.body);
       }
     }
 
     void update(Halley::Time time) {
+      space.step(time);
     }
 
 private:

@@ -24,4 +24,3 @@ public:
 };
 
 REGISTER_SYSTEM(SpriteRenderSystem)
-

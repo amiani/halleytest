@@ -48,4 +48,5 @@ set (HEADERS
 set(GEN_DEFINITIONS
         )
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-copy")
 halleyProject(halleytest "${SOURCES}" "${HEADERS}" "${GEN_DEFINITIONS}" ${CMAKE_CURRENT_SOURCE_DIR}/bin)

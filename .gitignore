@@ -1,8 +1,9 @@
 assets/
+assets_unpacked/
 bin/
 build/
 build-external/
 cmake-build-debug/
 gen/
-.idea/
+.vscode/
 lib/libtorch/

@@ -29,4 +29,5 @@ system:
   families:
     - bodies:
       - Body: read
+      - Shape: read
   strategy: global
