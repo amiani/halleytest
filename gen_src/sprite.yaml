@@ -1,0 +1,47 @@
+---
+
+component:
+  name: Position
+  members:
+  - position: 'Halley::Vector2f'
+
+---
+
+component:
+  name: SpritePositionOverride
+  members:
+  - position: 'Halley::Maybe<Halley::Vector2f>'
+
+---
+
+system:
+  name: SpriteRender
+  families:
+  - sprite:
+    - Position: read
+    - SpritePositionOverride: optional read
+    - Sprite: write
+  - text:
+    - Position: read
+    - TextLabel: write
+  method: render
+  strategy: global
+  services:
+  - PainterService
+
+#---
+
+#message:
+  #name: PlayAnimation
+  #members:
+  #- sequence: 'Halley::String'
+
+#---
+
+#system:
+  #name: SpriteAnimation
+  #families:
+  #- main:
+    #- Sprite: write
+  #messages:
+  #- PlayAnimation: receive

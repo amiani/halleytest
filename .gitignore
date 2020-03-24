@@ -1,0 +1,8 @@
+assets/
+bin/
+build/
+build-external/
+cmake-build-debug/
+gen/
+.idea/
+lib/libtorch/

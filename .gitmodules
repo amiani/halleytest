@@ -1,0 +1,6 @@
+[submodule "halley"]
+	path = halley
+	url = https://github.com/amzeratul/halley
+[submodule "lib/chipmunkpp"]
+	path = lib/chipmunkpp
+	url = https://github.com/jhasse/chipmunkpp

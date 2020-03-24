@@ -1,0 +1,32 @@
+type:
+  name: std::shared_ptr<cp::Body>
+  include: 'chipmunk.hpp'
+
+---
+
+type:
+  name: std::shared_ptr<cp::Shape>
+  include: 'chipmunk.hpp'
+
+---
+
+component:
+  name: Body
+  members:
+    - body: 'std::shared_ptr<cp::Body>'
+
+---
+
+component:
+  name: Shape
+  members:
+    - shape: 'std::shared_ptr<cp::Shape>'
+
+---
+
+system:
+  name: Physics
+  families:
+    - bodies:
+      - Body: read
+  strategy: global
