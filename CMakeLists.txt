@@ -36,6 +36,7 @@ set (SOURCES
         "src/services/input_service.cpp"
         "src/title_stage.cpp"
         "src/game_stage.cpp"
+        "src/utils.cpp"
      )
 
 set (HEADERS
@@ -46,6 +47,7 @@ set (HEADERS
         "src/control/action.h"
         "src/control/observation.h"
         "src/control/policy.h"
+        "src/utils.h"
      )
 
 set(GEN_DEFINITIONS
