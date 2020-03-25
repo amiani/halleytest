@@ -15,9 +15,9 @@ find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
 add_library(libchipmunk STATIC IMPORTED)
-set_target_properties(libchipmunk PROPERTIES IMPORTED_LOCATION "${CHIPMUNKPP_PATH}/build/chipmunk/src/libchipmunk.a")
+set_target_properties(libchipmunk PROPERTIES IMPORTED_LOCATION "${CHIPMUNKPP_PATH}/chipmunk/build/src/libchipmunk.a")
 add_library(libchipmunkpp STATIC IMPORTED)
-set_target_properties(libchipmunkpp PROPERTIES IMPORTED_LOCATION "${CHIPMUNKPP_PATH}/build/libchipmunkpp.a")
+set_target_properties(libchipmunkpp PROPERTIES IMPORTED_LOCATION "${CHIPMUNKPP_PATH}/libchipmunk++.a")
 
 link_libraries(
         ${TORCH_LIBRARIES}
@@ -43,6 +43,9 @@ set (HEADERS
         "src/services/input_service.h"
         "src/title_stage.h"
         "src/game_stage.h"
+        "src/control/action.h"
+        "src/control/observation.h"
+        "src/control/policy.h"
      )
 
 set(GEN_DEFINITIONS
