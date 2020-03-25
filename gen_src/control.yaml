@@ -1,0 +1,60 @@
+type:
+  name: Policy
+  include: 'src/control/policy.h'
+
+---
+
+type:
+  name: std::vector<Action>
+  include: 'src/control/action.h'
+
+---
+
+type:
+  name: std::vector<Observation>
+  include: 'src/control/observation.h'
+
+---
+
+component:
+  name: DeviceControl
+  members: 
+    - device: 'Halley::InputVirtual*'
+
+---
+
+component:
+  name: RLControl
+  members: 
+    - policy: 'Policy'
+
+---
+
+component:
+  name: History
+  members:
+    - actions: 'std::vector<Action>'
+    - observations: 'std::vector<Observation>'
+
+---
+
+system:
+  name: DeviceControl
+  families:
+  - main:
+    - DeviceControl: write
+    - Body: read
+    - Camera: read
+    - History: optional write
+  strategy: parallel
+
+---
+
+system:
+  name: RLControl
+  families:
+  - main:
+    - RLControl: read
+    - Body: read
+    - History: optional write
+  strategy: parallel

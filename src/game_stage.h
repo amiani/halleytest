@@ -10,6 +10,7 @@ public:
 	explicit GameStage();
 	void init() override;
 
+  void onFixedUpdate(Time) override;
 	void onVariableUpdate(Time) override;
 	void onRender(RenderContext&) const override;
 

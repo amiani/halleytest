@@ -1,6 +1,8 @@
 ---
 timelines:
   fixedUpdate:
+  - DeviceControl
+  - RLControl
   - Physics
 
   variableUpdate:

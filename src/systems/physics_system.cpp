@@ -8,7 +8,6 @@ public:
 
     void onEntitiesAdded(Halley::Span<BodiesFamily> es) {
       for (auto &e : es) {
-        e.shape.shape->setBody(e.body.body);
         space.add(e.body.body);
       }
     }

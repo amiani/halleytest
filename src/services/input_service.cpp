@@ -29,6 +29,10 @@ InputService::InputService(InputAPI& input)
 
 		device->bindButton(4, joy, joy->getButtonAtPosition(JoystickButtonPosition::Start));
 	}
+
+  if (input.getNumberOfMice() > 0) {
+    device->bindPosition(input.getMouse());
+  }
 }
 
 void InputService::update(Time t)

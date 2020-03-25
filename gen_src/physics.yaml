@@ -27,7 +27,9 @@ component:
 system:
   name: Physics
   families:
-    - bodies:
-      - Body: read
-      - Shape: read
+  - bodies:
+    - Body: read
+    - Shape: read
   strategy: global
+  services:
+  - InputService
