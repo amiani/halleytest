@@ -69,7 +69,7 @@ std::unique_ptr<Stage> HalleyTestGame::startGame(const HalleyAPI* api)
 		windowType = WindowType::Window;
 	}
 	
-	zoom = std::max(float(windowSize.x) / 384.0f, float(windowSize.y) / 216.0f);
+	//zoom = std::max(float(windowSize.x) / 384.0f, float(windowSize.y) / 216.0f);
 	
 	api->video->setWindow(WindowDefinition(windowType, windowSize, "Law of the Instrument"));
 	api->video->setVsync(vsync);

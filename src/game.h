@@ -23,7 +23,7 @@ public:
 
 private:
 	const HalleyAPI* api = nullptr;
-	float zoom = 3;
+	float zoom = 1;
 	
 	std::shared_ptr<InputService> inputService;
 };
