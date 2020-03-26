@@ -12,6 +12,7 @@ public:
         const cp::Vect bodyPos = e.body.body->getPosition();
 				const Vector2f pos = Vector2f(bodyPos.x, bodyPos.y);
 				sprite.setPos(pos);
+        sprite.setRotation(e.body.body->getAngle());
 				getPainterService().spritePainter.add(sprite, e.sprite.mask, e.sprite.layer, pos.y);
 			}
 		}
