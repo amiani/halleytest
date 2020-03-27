@@ -8,6 +8,6 @@ Halley::Vector2f chipToScreen(cp::Vect p, cp::Vect camPos) {
 }
 
 cp::Vect screenToChip(Halley::Vector2f p, cp::Vect camPos) {
-  const auto invPos = cp::Vect(p.x - screenSize.x / 2, screenSize.y / 2 - p.y);
+  const auto invPos = cp::Vect(p.x - screenSize.x / 2, p.y - screenSize.y / 2);
   return invPos + camPos;
 }
