@@ -1,4 +1,5 @@
 #include <systems/device_control_system.h>
+#include "src/utils.h"
 
 using namespace Halley;
 
@@ -6,15 +7,16 @@ class DeviceControlSystem : public DeviceControlSystemBase<DeviceControlSystem> 
 public:
   void update(Time time, MainFamily& e) {
     //Action action;
-    if (e.deviceControl.device->isButtonPressed(3)) {
-      e.body.body->applyForceAtLocalPoint(cp::Vect(0, 1), cp::Vect(0, 0));
+    const auto body = e.body.body;
+    if (e.deviceControl.device->isButtonDown(3)) {
+      body->applyForceAtLocalPoint(cp::Vect(500, 0), cp::Vect(0, 0));
     }
-    const cp::Vect bodyPos = e.body.body->getPosition();
-    const auto windowSize = Vector2f(1920, 1080) / 5 * 4;
+    const cp::Vect bodyPos = body->getPosition();
     const auto mousePos = e.deviceControl.device->getPosition();
-    const auto mouseWorldPos = mousePos - windowSize / 2;
-    
-    //e.body.body->setAngle(angle);
+    const auto mouseWorldPos = screenToChip(mousePos, bodyPos);
+    //std::cout << mouseWorldPos << std::endl;
+    const double angle = cp::Vect::toAngle(mouseWorldPos - bodyPos);
+    body->setAngle(angle);
   }
 };
 

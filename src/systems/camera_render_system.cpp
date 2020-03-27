@@ -20,7 +20,7 @@ public:
 		for (auto& cPtr: cams) {
 			auto& c = *cPtr;
       auto cpos = c.body.body->getPosition();
-			auto camera = Camera().setZoom(c.backgroundCamera.zoom).setPosition(Vector2f(cpos.x, cpos.y));
+			auto camera = Camera().setZoom(c.backgroundCamera.zoom).setPosition(Vector2f(cpos.x, -cpos.y));
 
 			rc.with(camera).bind([&] (Painter& painter) {
 				if (c.backgroundCamera.clear) {
@@ -28,17 +28,16 @@ public:
 				}
         const auto bg = c.backgroundCamera.background;
         const auto size = bg.getScaledSize();
-        const Vector2i numTiles = Vector2i(
-          painter.getViewPort().getSize().x / bg.getScaledSize().x + 2,
-          painter.getViewPort().getSize().y / bg.getScaledSize().y + 2);
-        Sprite tiles[numTiles.x][numTiles.y];
         const auto viewSize = painter.getViewPort().getSize();
+        const Vector2i numTiles = Vector2i(
+          ceil(viewSize.x / size.x) + 1,
+          ceil(viewSize.y / size.y) + 1);
         for (int x = 0; x <= numTiles.x; x++) {
           for (int y = 0; y <= numTiles.y; y++) {
-            const auto posX = cpos.x + (int)(-cpos.x) % (int)size.x - viewSize.x / 2 + size.x * (x - 1);
-            const auto posY = cpos.y + (int)(-cpos.y) % (int)size.y - viewSize.y / 2 + size.y * (y - 1);
+            const auto posX = cpos.x - (int)(cpos.x) % (int)size.x - viewSize.x / 2 + size.x * (x - 1);
+            const auto posY = cpos.y - (int)(cpos.y) % (int)size.y - viewSize.y / 2 + size.y * y;
             Sprite()
-              .setPosition(Vector2f(posX, posY))
+              .setPosition(Vector2f(posX, -posY))
               .setMaterial(std::make_shared<Material>(bg.getMaterial()))
               .draw(painter);
           }

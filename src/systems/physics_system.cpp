@@ -3,9 +3,6 @@
 
 class PhysicsSystem final : public PhysicsSystemBase<PhysicsSystem> {
 public:
-    void init() {
-    }
-
     void onEntitiesAdded(Halley::Span<BodiesFamily> es) {
       for (auto &e : es) {
         space.add(e.body.body);
