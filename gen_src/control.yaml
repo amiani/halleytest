@@ -44,7 +44,6 @@ system:
   - main:
     - DeviceControl: write
     - Body: read
-    - Camera: read
     - History: optional write
   strategy: parallel
 

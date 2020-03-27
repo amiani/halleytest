@@ -1,4 +1,5 @@
 #include <systems/camera_render_system.h>
+#include "src/utils.h"
 
 using namespace Halley;
 
@@ -13,19 +14,36 @@ public:
 		}
 		std::sort(cams.begin(), cams.end(), [] (const CameraFamily* a, const CameraFamily* b) -> bool
 		{
-			return a->camera.layer < b->camera.layer;
+			return a->backgroundCamera.layer < b->backgroundCamera.layer;
 		});
 		
 		for (auto& cPtr: cams) {
 			auto& c = *cPtr;
-      auto cPos = c.body.body->getPosition();
-			auto camera = Camera().setZoom(c.camera.zoom).setPosition(Vector2f(cPos.x, cPos.y));
+      auto cpos = c.body.body->getPosition();
+			auto camera = Camera().setZoom(c.backgroundCamera.zoom).setPosition(Vector2f(cpos.x, cpos.y));
 
 			rc.with(camera).bind([&] (Painter& painter) {
-				if (c.camera.clear) {
-					painter.clear(c.camera.clear.value());
+				if (c.backgroundCamera.clear) {
+					painter.clear(c.backgroundCamera.clear.value());
 				}
-				getPainterService().spritePainter.draw(c.camera.mask, painter);
+        const auto bg = c.backgroundCamera.background;
+        const auto size = bg.getScaledSize();
+        const Vector2i numTiles = Vector2i(
+          painter.getViewPort().getSize().x / bg.getScaledSize().x + 2,
+          painter.getViewPort().getSize().y / bg.getScaledSize().y + 2);
+        Sprite tiles[numTiles.x][numTiles.y];
+        const auto viewSize = painter.getViewPort().getSize();
+        for (int x = 0; x <= numTiles.x; x++) {
+          for (int y = 0; y <= numTiles.y; y++) {
+            const auto posX = cpos.x + (int)(-cpos.x) % (int)size.x - viewSize.x / 2 + size.x * (x - 1);
+            const auto posY = cpos.y + (int)(-cpos.y) % (int)size.y - viewSize.y / 2 + size.y * (y - 1);
+            Sprite()
+              .setPosition(Vector2f(posX, posY))
+              .setMaterial(std::make_shared<Material>(bg.getMaterial()))
+              .draw(painter);
+          }
+        }
+				getPainterService().spritePainter.draw(c.backgroundCamera.mask, painter);
 			});
 		}
 	}
