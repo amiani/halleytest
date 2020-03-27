@@ -1,0 +1,8 @@
+---
+asteroids:
+  - id: small
+    image: asteroid1.png
+    radius: 16
+    mass: 2
+
+...
