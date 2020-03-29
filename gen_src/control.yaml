@@ -1,59 +1,22 @@
 type:
-  name: Policy
-  include: 'src/control/policy.h'
-
----
-
-type:
-  name: std::vector<Action>
-  include: 'src/control/action.h'
-
----
-
-type:
-  name: std::vector<Observation>
-  include: 'src/control/observation.h'
+  name: std::shared_ptr<Controller>
+  include: "src/control/controller.h"
 
 ---
 
 component:
-  name: DeviceControl
-  members: 
-    - device: 'Halley::InputVirtual*'
-
----
-
-component:
-  name: RLControl
-  members: 
-    - policy: 'Policy'
-
----
-
-component:
-  name: History
+  name: ShipControl
   members:
-    - actions: 'std::vector<Action>'
-    - observations: 'std::vector<Observation>'
+    - controller: std::shared_ptr<Controller>
 
 ---
 
 system:
-  name: DeviceControl
+  name: Control
   families:
   - main:
-    - DeviceControl: write
-    - Body: read
-    - History: optional write
-  strategy: parallel
-
----
-
-system:
-  name: RLControl
-  families:
-  - main:
-    - RLControl: read
-    - Body: read
-    - History: optional write
-  strategy: parallel
+    - ShipControl: read
+    - Body: write
+  strategy: individual
+  services:
+    - ControllerService

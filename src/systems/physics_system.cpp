@@ -18,6 +18,7 @@ public:
   }
 
   void update(Halley::Time time) {
+    std::cout << "Physics\n";
     space.step(time);
   }
 

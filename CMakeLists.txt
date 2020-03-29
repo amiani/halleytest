@@ -33,21 +33,27 @@ include_directories(
 
 set (SOURCES
         "src/game.cpp"
+        "src/control/controller.cpp"
         "src/services/input_service.cpp"
+        "src/services/controller_service.cpp"
         "src/title_stage.cpp"
         "src/game_stage.cpp"
         "src/utils.cpp"
+        "src/config/weapon_config.cpp"
      )
 
 set (HEADERS
         "src/game.h"
         "src/services/input_service.h"
+        "src/services/controller_service.h"
         "src/title_stage.h"
         "src/game_stage.h"
         "src/control/action.h"
         "src/control/observation.h"
         "src/control/policy.h"
+        "src/control/controller.h"
         "src/utils.h"
+        "src/config/weapon_config.h"
      )
 
 set(GEN_DEFINITIONS

@@ -1,9 +1,9 @@
 #pragma once
 
-#include <halley.hpp>
+#include "chipmunk.hpp"
 
 struct Action {
   bool throttle = false;
   bool fire = false;
-  Halley::Vector2f target = Halley::Vector2f(0, 0);
+  cp::Vect target = cp::Vect();
 };

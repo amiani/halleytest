@@ -31,7 +31,9 @@ InputService::InputService(InputAPI& input)
 	}
 
   if (input.getNumberOfMice() > 0) {
-    device->bindPosition(input.getMouse());
+    auto mouse = input.getMouse();
+    device->bindPosition(mouse);
+    device->bindButton(4, mouse, 0);
   }
 }
 
