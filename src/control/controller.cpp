@@ -20,5 +20,5 @@ const Action& InputController::update(Time t, const cp::Vect& p) {
   a->fire = device.isButtonPressed(4);
   a->target = screenToChip(device.getPosition(), p);
   actions.push_back(a);
-  return *(actions.back());
+  return *a;
 }

@@ -2,7 +2,9 @@
 #include "src/control/controller.h"
 
 std::shared_ptr<InputController> ControllerService::makeInputController(InputVirtual& device) {
-  controllers.push_back(std::make_unique<InputController>(device));
+  auto c = std::make_shared<InputController>(device);
+  controllers.push_back(c);
+  return c;
 }
 
 RLController& ControllerService::makeRLController() {

@@ -4,9 +4,8 @@
 class ControlSystem final : public ControlSystemBase<ControlSystem> {
 public:
   void update(Halley::Time time, MainFamily& e) {
-    //std::cout << "ControlSystem\n";
     auto body = e.body.body;
-    const auto a = e.shipControl.controller->update(time, body->getPosition());
+    auto a = e.shipControl.controller->update(time, body->getPosition());
 
     if (a.throttle) {
       body->applyForceAtLocalPoint(cp::Vect(500, 0), cp::Vect(0, 0));

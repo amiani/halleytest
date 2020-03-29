@@ -13,5 +13,5 @@ public:
   Controller& getController(int id);
 
 private:
-  std::vector<std::unique_ptr<Controller>> controllers;
+  std::vector<std::shared_ptr<Controller>> controllers;
 };
