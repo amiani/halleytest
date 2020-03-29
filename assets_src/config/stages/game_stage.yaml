@@ -2,6 +2,7 @@
 timelines:
   fixedUpdate:
   - Control
+  - WeaponControl
   - Physics
 
   render:

@@ -11,6 +11,7 @@
 #include "components/weapon_component.h"
 #include "components/parent_component.h"
 #include "components/ship_control_component.h"
+#include "components/weapon_control_component.h"
 #include "services/input_service.h"
 #include "services/controller_service.h"
 //#include "sprite_layers.h"
@@ -53,6 +54,13 @@ void GameStage::init()
         0, 1));
   }
 
+  auto laserConfig = WeaponConfig();
+  auto& laserNode = getResources().get<ConfigFile>("gameplay/weapons")->getRoot()["weapons"]["laser"];
+  laserConfig.load(laserNode);
+  auto laser = world->createEntity()
+    .addComponent(WeaponControlComponent())
+    .addComponent(WeaponComponent());
+
   cp::Float mass = 1;
   cp::Float radius = 32;
   cp::Float moment = cp::momentForCircle(mass, 0, radius);
@@ -66,20 +74,10 @@ void GameStage::init()
 	  .addComponent(BodyComponent(body))
 	  .addComponent(ShapeComponent(std::make_shared<cp::CircleShape>(body, radius)))
 	  .addComponent(SpriteComponent(sprite, 0, 1))
-    .addComponent(HardpointsComponent())
+    .addComponent(HardpointsComponent(std::vector<EntityId>{laser.getEntityId()}))
     .addComponent(ShipControlComponent(controllerService->makeInputController(device)))
 		.addComponent(BackgroundCameraComponent(game.getZoom(), Colour4f(0.0f, 0.0f, 0.0f), 1, 0, bgSprite));
 
-  /*
-  auto laserConfig = WeaponConfig();
-  auto& laserNode = getResources().get<ConfigFile>("gameplay/weapons")->getRoot()["weapons"]["laser"];
-  laserConfig.load(laserNode);
-  auto laser = world->createEntity()
-    .addComponent(WeaponComponent(laserConfig))
-    .addComponent(ParentComponent(&ship, cp::Vect(0, -20)));
-  */
-  
-  //ship.getComponent<HardpointsComponent>().hardpoints.push_back(laser);
 }
 
 void GameStage::onFixedUpdate(Time t)

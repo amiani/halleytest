@@ -11,6 +11,10 @@ public:
       body->applyForceAtLocalPoint(cp::Vect(500, 0), cp::Vect(0, 0));
     }
 
+    if (a.fire && !e.hardpoints.hardpoints.empty()) {
+      sendMessage(e.hardpoints.hardpoints.front(), FireWeaponMessage());
+    }
+
     cp::Vect bodyPos = body->getPosition();
     double angle = cp::Vect::toAngle(a.target - bodyPos);
     body->setAngle(angle);

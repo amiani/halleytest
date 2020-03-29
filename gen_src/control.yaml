@@ -11,12 +11,37 @@ component:
 
 ---
 
+component:
+  name: WeaponControl
+
+---
+
+message:
+  name: FireWeapon
+
+---
+
 system:
   name: Control
   families:
   - main:
     - ShipControl: read
+    - Hardpoints: read
     - Body: write
   strategy: individual
   services:
     - ControllerService
+  messages:
+    - FireWeapon: send
+
+---
+
+system:
+  name: WeaponControl
+  families:
+    - main:
+      - WeaponControl: read
+      - Weapon: read
+  strategy: individual
+  messages:
+    - FireWeapon: receive

@@ -20,7 +20,7 @@ component:
 component:
   name: Hardpoints
   members:
-  - hardpoints: std::vector<Halley::EntityRef>
+  - hardpoints: std::vector<Halley::EntityId>
 
 ---
 
