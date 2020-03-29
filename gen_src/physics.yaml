@@ -10,6 +10,12 @@ type:
 
 ---
 
+type:
+  name: cp:Vect
+  include: 'chipmunk.hpp'
+
+---
+
 component:
   name: Body
   members:
@@ -31,5 +37,3 @@ system:
     - Body: read
     - Shape: read
   strategy: global
-  services:
-  - InputService

@@ -1,8 +1,7 @@
 ---
 timelines:
   fixedUpdate:
-  - DeviceControl
-  - RLControl
+  - Control
   - Physics
 
   render:

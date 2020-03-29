@@ -1,6 +1,6 @@
 type:
-  name: InputService
-  include: "src/services/input_service.h"
+  name: ControllerService
+  include: "src/services/controller_service.h"
 
 ---
 
