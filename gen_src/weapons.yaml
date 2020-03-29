@@ -1,0 +1,32 @@
+type:
+  name: WeaponConfig
+  include: "src/config/weapon_config.h"
+
+---
+
+type:
+  name: Hardpoint
+  include: "src/hardpoint.h"
+
+---
+
+component:
+  name: Weapon
+  members:
+  - config: WeaponConfig
+
+---
+
+component:
+  name: Hardpoints
+  members:
+  - hardpoints: std::vector<Halley::EntityRef>
+
+---
+
+component:
+  name: Parent
+  members:
+  - ref: EntityRef*
+  - offset: 'cp::Vect'
+

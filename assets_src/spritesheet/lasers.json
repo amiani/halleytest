@@ -1,0 +1,20 @@
+{"frames": [
+
+{
+	"filename": "smallbluelaser.png",
+	"frame": {"x":0,"y":0,"w":1150,"h":152},
+	"rotated": false,
+	"trimmed": false,
+	"spriteSourceSize": {"x":0,"y":0,"w":1150,"h":152},
+	"sourceSize": {"w":1150,"h":152}
+}],
+"meta": {
+	"app": "https://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "lasers.png",
+	"format": "RGBA8888",
+	"size": {"w":1150,"h":152},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:e1072d416d1822b7a041b864a86c1f9a:acb74d7dc042eb94ada0458e37704f59:3729e92c9b0a8746bac056a34ec3384e$"
+}
+}

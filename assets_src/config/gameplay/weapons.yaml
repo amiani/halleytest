@@ -1,0 +1,7 @@
+weapons:
+  - id: laser
+    projectileImage: smallbluelaser.png
+    radius: 1
+    mass: .1
+
+...
