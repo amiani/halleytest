@@ -5,7 +5,7 @@ type:
 ---
 
 type:
-  name: Hardpoint
+  name: std::vector<Hardpoint>
   include: "src/hardpoint.h"
 
 ---
@@ -20,13 +20,4 @@ component:
 component:
   name: Hardpoints
   members:
-  - hardpoints: std::vector<Halley::EntityId>
-
----
-
-component:
-  name: Parent
-  members:
-  - ref: EntityRef*
-  - offset: 'cp::Vect'
-
+  - hardpoints: std::vector<Hardpoint>

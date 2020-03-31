@@ -53,6 +53,7 @@ set (HEADERS
         "src/control/policy.h"
         "src/control/controller.h"
         "src/utils.h"
+        "src/hardpoint.h"
         "src/config/weapon_config.h"
      )
 

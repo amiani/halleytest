@@ -3,17 +3,18 @@
 #include "registry.h"
 #include "components/sprite_component.h"
 #include "components/health_component.h"
-#include "components/position_component.h" 
 #include "components/background_camera_component.h"
 #include "components/body_component.h"
 #include "components/hardpoints_component.h"
 #include "components/shape_component.h"
+#include "halley/src/engine/entity/include/halley/entity/components/transform_2d_component.h"
 #include "components/weapon_component.h"
 #include "components/parent_component.h"
 #include "components/ship_control_component.h"
 #include "components/weapon_control_component.h"
 #include "services/input_service.h"
 #include "services/controller_service.h"
+#include "src/hardpoint.h"
 //#include "sprite_layers.h"
 #include "game.h"
 #include "title_stage.h"
@@ -43,10 +44,14 @@ void GameStage::init()
     cp::Float moment = cp::momentForCircle(mass, 0, radius);
     auto body = std::make_shared<cp::Body>(mass, moment);
     body->setPosition(cp::Vect(0, 100));
+    auto shape = std::make_shared<cp::CircleShape>(body, radius);
+    shape->setFilter({ .categories = 0b10000, .mask = 0b11111 });
+    shape->setCollisionType(0b10000);
     world->createEntity()
       .addComponent(HealthComponent(100))
       .addComponent(BodyComponent(body))
-      .addComponent(ShapeComponent(std::make_shared<cp::CircleShape>(body, radius)))
+      .addComponent(ShapeComponent(shape))
+      .addComponent(Transform2DComponent())
       .addComponent(SpriteComponent(Sprite()
         .setImage(getResources(), image)
         .setPivot(Vector2f(.5f, .5f))
@@ -54,31 +59,41 @@ void GameStage::init()
         0, 1));
   }
 
+  auto& laserNode = getResources().get<ConfigFile>("gameplay/weapons")->getRoot()["weapons"].asSequence()[0];
   auto laserConfig = WeaponConfig();
-  auto& laserNode = getResources().get<ConfigFile>("gameplay/weapons")->getRoot()["weapons"]["laser"];
   laserConfig.load(laserNode);
   auto laser = world->createEntity()
     .addComponent(WeaponControlComponent())
-    .addComponent(WeaponComponent());
+    .addComponent(WeaponComponent(laserConfig));
 
   cp::Float mass = 1;
   cp::Float radius = 32;
   cp::Float moment = cp::momentForCircle(mass, 0, radius);
   auto body = std::make_shared<cp::Body>(mass, moment);
+  auto shape = std::make_shared<cp::CircleShape>(body, radius);
+  shape->setFilter({ .categories = 0b1, .mask = 0b11100 });
+  shape->setCollisionType(0b1);
   auto sprite = Sprite()
     .setImage(getResources(), "large_grey_01.png")
     .setPivot(Vector2f(.5f, .5f));
   auto bgSprite = Sprite().setImage(getResources(), "goldstartile.jpg");
   auto device = game.getInputService()->getInput();
+  auto h = Hardpoint();
+  h.id = laser.getEntityId();
+  h.offset = Vector2f(25, 0);
 	auto ship = world->createEntity()
 	  .addComponent(BodyComponent(body))
-	  .addComponent(ShapeComponent(std::make_shared<cp::CircleShape>(body, radius)))
+	  .addComponent(ShapeComponent(shape))
 	  .addComponent(SpriteComponent(sprite, 0, 1))
-    .addComponent(HardpointsComponent(std::vector<EntityId>{laser.getEntityId()}))
+    .addComponent(HardpointsComponent(std::vector<Hardpoint>{h}))
+    .addComponent(Transform2DComponent())
     .addComponent(ShipControlComponent(controllerService->makeInputController(device)))
 		.addComponent(BackgroundCameraComponent(game.getZoom(), Colour4f(0.0f, 0.0f, 0.0f), 1, 0, bgSprite));
 
+  laser.addComponent(Transform2DComponent(ship.getComponent<Transform2DComponent>(), Vector2f(25, 0)));
+  
 }
+
 
 void GameStage::onFixedUpdate(Time t)
 {

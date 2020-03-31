@@ -2,6 +2,7 @@ weapons:
   - id: laser
     projectileImage: smallbluelaser.png
     radius: 1
-    mass: .1
+    mass: .01
+    damping: 0
 
 ...

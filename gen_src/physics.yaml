@@ -30,10 +30,21 @@ component:
 
 ---
 
+message:
+  name: LaserAsteroidCollision
+  members:
+
+---
+
 system:
   name: Physics
   families:
-  - bodies:
+  - shapes:
     - Body: read
     - Shape: read
+  - bodies:
+    - Body: read
+    - Transform2D: write
   strategy: global
+  messages:
+  - LaserAsteroidCollision: send
