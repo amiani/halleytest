@@ -28,6 +28,7 @@ system:
     - ShipControl: read
     - Hardpoints: read
     - Body: write
+    - Transform2D: write
   strategy: individual
   services:
     - ControllerService
@@ -40,8 +41,11 @@ system:
   name: WeaponControl
   families:
     - main:
-      - WeaponControl: read
       - Weapon: read
+      - Transform2D: write
   strategy: individual
   messages:
     - FireWeapon: receive
+  access:
+    - world
+    - resources

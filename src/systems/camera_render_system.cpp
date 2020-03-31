@@ -19,7 +19,7 @@ public:
 		
 		for (auto& cPtr: cams) {
 			auto& c = *cPtr;
-      auto cpos = c.body.body->getPosition();
+      auto cpos = c.transform2D.getGlobalPosition();
 			auto camera = Camera().setZoom(c.backgroundCamera.zoom).setPosition(Vector2f(cpos.x, cpos.y));
 
 			rc.with(camera).bind([&] (Painter& painter) {

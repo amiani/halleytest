@@ -1,9 +1,6 @@
----
-
-component:
-  name: Position
-  members:
-  - position: 'Halley::Vector2f'
+type:
+  name: cp::Vect
+  include: "chipmunk.hpp"
 
 ---
 
@@ -18,10 +15,10 @@ system:
   name: SpriteRender
   families:
   - sprite:
-    - Body: read
+    - Transform2D: read
     - Sprite: write
   - text:
-    - Position: read
+    - Transform2D: read
     - TextLabel: write
   method: render
   strategy: global
