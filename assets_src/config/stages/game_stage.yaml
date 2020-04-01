@@ -4,6 +4,7 @@ timelines:
   - Control
   - WeaponControl
   - Physics
+  - DefensiveStat
 
   render:
   - SpriteRender

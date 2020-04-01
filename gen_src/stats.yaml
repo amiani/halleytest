@@ -2,3 +2,16 @@ component:
   name: Health
   members:
     - health: int
+
+---
+
+system:
+  name: DefensiveStat
+  families:
+  - main:
+    - Health: write
+  strategy: individual
+  access:
+    - world
+  messages:
+  - Hit: receive

@@ -29,7 +29,7 @@ public:
     body->setVelocity(cp::Vect(x, y) * 500);
 
     auto shape = std::make_shared<cp::CircleShape>(body, radius);
-    shape->setCollisionType(0b10);
+    shape->setCollisionType(1);
     shape->setFilter({ .categories = 0b10, .mask = 0b11100 });
 
     auto sprite = Sprite()

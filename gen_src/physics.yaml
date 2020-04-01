@@ -36,6 +36,13 @@ message:
 
 ---
 
+message:
+  name: Hit
+  members:
+  - damage: int
+
+---
+
 system:
   name: Physics
   families:
@@ -46,5 +53,8 @@ system:
     - Body: read
     - Transform2D: write
   strategy: global
+  access:
+  - world
   messages:
   - LaserAsteroidCollision: send
+  - Hit: send

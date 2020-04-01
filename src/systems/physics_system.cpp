@@ -5,9 +5,23 @@
 class PhysicsSystem final : public PhysicsSystemBase<PhysicsSystem> {
 public:
   void init() {
-    space.addBeginCollisionHandler(cp::CollisionType(0b10000), cp::CollisionType(0b10), [](auto arb, auto& s) {
-      std::cout << "Collision!\n";
-      
+    space.setDamping(.6);
+    /*
+    space.addBeginCollisionHandler(cp::CollisionType(0b10000), cp::CollisionType(0b10), [this](cp::Arbiter arb, auto& s) {
+      auto asteroidId = static_cast<Halley::EntityId*>(arb.getBodyA().getUserData());
+      auto laserId = static_cast<Halley::EntityId*>(arb.getBodyB().getUserData());
+
+
+      sendMessage(*asteroidId, HitMessage(10));
+      arb.callWildcardBeginA();
+      return false;
+    });
+    */
+    space.addBeginCollisionHandler(1, [this](cp::Arbiter arb, auto& s) {
+      auto laser = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
+      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
+      getWorld().destroyEntity(laser->getEntityId());
+      sendMessage(other->getEntityId(), HitMessage(10));
       return false;
     });
   }
@@ -42,7 +56,9 @@ public:
   }
 
   void onEntitiesAdded(Halley::Span<ShapesFamily> es) {
-    for (auto &e : es) {
+    for (auto& e : es) {
+      auto entity = getWorld().tryGetEntity(e.entityId);
+      e.body.body->setUserData(reinterpret_cast<cp::DataPointer>(entity));
       bodiesToAdd.push_back(e.body.body);
       shapesToAdd.push_back(e.shape.shape);
     }
