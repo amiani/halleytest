@@ -8,8 +8,8 @@ using namespace Halley;
 
 class ControllerService : public Service {
 public:
-  std::shared_ptr<InputController> makeInputController(InputVirtual& device);
-  RLController& makeRLController();
+  std::shared_ptr<InputController> makeInputController(InputVirtual& device, Transform2DComponent& cameraTransform);
+  std::shared_ptr<RLController> makeRLController();
   Controller& getController(int id);
 
 private:
