@@ -34,6 +34,7 @@ include_directories(
 set (SOURCES
         "src/game.cpp"
         "src/control/controller.cpp"
+        "src/control/policy.cpp"
         "src/services/input_service.cpp"
         "src/services/controller_service.cpp"
         "src/title_stage.cpp"
