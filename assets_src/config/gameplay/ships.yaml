@@ -1,0 +1,10 @@
+ships:
+  - id: large_grey
+    image: large_grey_01.png
+    radius: 32
+    pivot: [.5, .5]
+    mass: 1
+    sensorRadius: 960
+    hardpoints: [
+      [25, 0]
+    ]
