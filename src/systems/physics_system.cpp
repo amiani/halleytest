@@ -17,12 +17,27 @@ public:
       return false;
     });
     */
-    space.addBeginCollisionHandler(1, [this](cp::Arbiter arb, auto& s) {
+    space.addBeginCollisionHandler(PROJECTILE, [this](cp::Arbiter arb, auto& s) {
       auto laser = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
       auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
       getWorld().destroyEntity(laser->getEntityId());
       sendMessage(other->getEntityId(), HitMessage(10));
       return false;
+    });
+
+    space.addBeginCollisionHandler(SENSOR, [this](cp::Arbiter arb, auto& s) {
+      auto sensor = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
+      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
+      auto& sensorComp = sensor->getComponent<SensorComponent>();
+      sensorComp.entities.push_back(other);
+      return false;
+    });
+
+    space.addSeparateCollisionHandler(SENSOR, [this](cp::Arbiter arb, auto& s) {
+      auto sensor = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
+      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
+      auto& es = sensor->getComponent<SensorComponent>().entities;
+      es.erase(std::remove(es.begin(), es.end(), other), es.end());
     });
   }
 
@@ -55,19 +70,25 @@ public:
     }
   }
 
-  void onEntitiesAdded(Halley::Span<ShapesFamily> es) {
+  void onEntitiesAdded(Halley::Span<PhysicalFamily> es) {
     for (auto& e : es) {
       auto entity = getWorld().tryGetEntity(e.entityId);
       e.body.body->setUserData(reinterpret_cast<cp::DataPointer>(entity));
       bodiesToAdd.push_back(e.body.body);
       shapesToAdd.push_back(e.shape.shape);
+      if (e.sensor.hasValue()) {
+        shapesToAdd.push_back(e.sensor->shape);
+      }
     }
   }
 
-  void onEntitiesRemoved(Halley::Span<ShapesFamily> es) {
+  void onEntitiesRemoved(Halley::Span<PhysicalFamily> es) {
     for (auto& e : es) {
       bodiesToRemove.push_back(e.body.body);
       shapesToRemove.push_back(e.shape.shape);
+      if (e.sensor.hasValue()) {
+        shapesToRemove.push_back(e.sensor->shape);
+      }
     }
   }
 

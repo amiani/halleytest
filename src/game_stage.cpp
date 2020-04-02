@@ -5,6 +5,7 @@
 #include "components/health_component.h"
 #include "components/background_camera_component.h"
 #include "components/body_component.h"
+#include "components/sensor_component.h"
 #include "components/hardpoints_component.h"
 #include "components/shape_component.h"
 #include "halley/src/engine/entity/include/halley/entity/components/transform_2d_component.h"
@@ -18,6 +19,7 @@
 //#include "sprite_layers.h"
 #include "game.h"
 #include "title_stage.h"
+#include "src/utils.h"
 
 GameStage::GameStage()
 {
@@ -36,28 +38,6 @@ void GameStage::init()
   auto controllerService = std::make_shared<ControllerService>();
   world->addService(controllerService);
 
-  for (auto& n : getResources().get<ConfigFile>("gameplay/celestial_bodies")->getRoot()["asteroids"].asSequence()) {
-    auto id = n["id"].asString();
-    auto mass = n["mass"].asFloat();
-    auto radius = n["radius"].asFloat();
-    auto image = n["image"].asString();
-    cp::Float moment = cp::momentForCircle(mass, 0, radius);
-    auto body = std::make_shared<cp::Body>(mass, moment);
-    body->setPosition(cp::Vect(0, 100));
-    auto shape = std::make_shared<cp::CircleShape>(body, radius);
-    shape->setFilter({ .categories = 0b10000, .mask = 0b11111 });
-    shape->setCollisionType(0b10000);
-    world->createEntity()
-      .addComponent(HealthComponent(100))
-      .addComponent(BodyComponent(body))
-      .addComponent(ShapeComponent(shape))
-      .addComponent(Transform2DComponent())
-      .addComponent(SpriteComponent(Sprite()
-        .setImage(getResources(), image)
-        .setPivot(Vector2f(.5f, .5f))
-        .scaleTo(Vector2f(2*radius, 2*radius)),
-        0, 1));
-  }
 
   auto& laserNode = getResources().get<ConfigFile>("gameplay/weapons")->getRoot()["weapons"].asSequence()[0];
   auto laserConfig = WeaponConfig();
@@ -65,6 +45,7 @@ void GameStage::init()
   auto laser = world->createEntity()
     .addComponent(WeaponControlComponent())
     .addComponent(WeaponComponent(laserConfig));
+  //std::cout << "weaponId: " << laser.getEntityId().value << std::endl;
 
   cp::Float mass = 1;
   cp::Float radius = 32;
@@ -72,7 +53,11 @@ void GameStage::init()
   auto body = std::make_shared<cp::Body>(mass, moment);
   auto shape = std::make_shared<cp::CircleShape>(body, radius);
   shape->setFilter({ .categories = 0b1, .mask = 0b11100 });
-  shape->setCollisionType(0b1);
+  shape->setCollisionType(PLAYERSHIP);
+  auto sensor = std::make_shared<cp::CircleShape>(body, 1920/2);
+  sensor->setFilter({ .categories = 0b100000, .mask = 0b10000 });
+  sensor->setCollisionType(SENSOR);
+  sensor->setSensor(true);
   auto sprite = Sprite()
     .setImage(getResources(), "large_grey_01.png")
     .setPivot(Vector2f(.5f, .5f));
@@ -84,14 +69,38 @@ void GameStage::init()
 	auto ship = world->createEntity()
 	  .addComponent(BodyComponent(body))
 	  .addComponent(ShapeComponent(shape))
+    .addComponent(SensorComponent(sensor, std::vector<Entity*>()))
 	  .addComponent(SpriteComponent(sprite, 0, 1))
     .addComponent(HardpointsComponent(std::vector<Hardpoint>{h}))
     .addComponent(Transform2DComponent())
     .addComponent(ShipControlComponent(controllerService->makeInputController(device)))
 		.addComponent(BackgroundCameraComponent(game.getZoom(), Colour4f(0.0f, 0.0f, 0.0f), 1, 0, bgSprite));
+  //std::cout << "shipId: " << ship.getEntityId().value << std::endl;
 
   laser.addComponent(Transform2DComponent(ship.getComponent<Transform2DComponent>(), Vector2f(25, 0)));
   
+  auto& n = getResources().get<ConfigFile>("gameplay/celestial_bodies")->getRoot()["asteroids"].asSequence()[0];
+  auto id = n["id"].asString();
+  auto astMass = n["mass"].asFloat();
+  auto astRadius = n["radius"].asFloat();
+  auto image = n["image"].asString();
+  cp::Float astMoment = cp::momentForCircle(astMass, 0, astRadius);
+  auto astBody = std::make_shared<cp::Body>(astMass, astMoment);
+  astBody->setPosition(cp::Vect(0, 100));
+  auto astShape = std::make_shared<cp::CircleShape>(astBody, astRadius);
+  astShape->setFilter({ .categories = 0b10000, .mask = 0b111111 });
+  astShape->setCollisionType(ASTEROID);
+  auto asteroid = world->createEntity()
+    .addComponent(HealthComponent(10))
+    .addComponent(BodyComponent(astBody))
+    .addComponent(ShapeComponent(astShape))
+    .addComponent(Transform2DComponent())
+    .addComponent(SpriteComponent(Sprite()
+      .setImage(getResources(), image)
+      .setPivot(Vector2f(.5f, .5f))
+      .scaleTo(Vector2f(2*astRadius, 2*astRadius)),
+      0, 1));
+  //std::cout << "astId: " << asteroid.getEntityId().value << std::endl;
 }
 
 

@@ -30,9 +30,11 @@ component:
 
 ---
 
-message:
-  name: LaserAsteroidCollision
+component:
+  name: Sensor
   members:
+  - shape: std::shared_ptr<cp::Shape>
+  - entities: std::vector<Halley::Entity*>
 
 ---
 
@@ -46,15 +48,17 @@ message:
 system:
   name: Physics
   families:
-  - shapes:
+  - physical:
     - Body: read
     - Shape: read
+    - Sensor: optional read
   - bodies:
     - Body: read
     - Transform2D: write
+  - sensors:
+    - Sensor: write
   strategy: global
   access:
   - world
   messages:
-  - LaserAsteroidCollision: send
   - Hit: send
