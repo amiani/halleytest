@@ -15,3 +15,7 @@ cp::Vect screenToChip(Halley::Vector2f p, cp::Vect camPos) {
 Halley::Vector2f chipToHalley(const cp::Vect& v) {
   return Halley::Vector2f(v.x, v.y);
 }
+
+cp::Vect halleyToChip(Halley::Vector2f v) {
+  return cp::Vect(v.x, v.y);
+}
