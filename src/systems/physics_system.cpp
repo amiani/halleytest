@@ -6,17 +6,7 @@ class PhysicsSystem final : public PhysicsSystemBase<PhysicsSystem> {
 public:
   void init() {
     space.setDamping(.6);
-    /*
-    space.addBeginCollisionHandler(cp::CollisionType(0b10000), cp::CollisionType(0b10), [this](cp::Arbiter arb, auto& s) {
-      auto asteroidId = static_cast<Halley::EntityId*>(arb.getBodyA().getUserData());
-      auto laserId = static_cast<Halley::EntityId*>(arb.getBodyB().getUserData());
 
-
-      sendMessage(*asteroidId, HitMessage(10));
-      arb.callWildcardBeginA();
-      return false;
-    });
-    */
     space.addBeginCollisionHandler(PROJECTILE, [this](cp::Arbiter arb, auto& s) {
       auto laser = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
       auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
