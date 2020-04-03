@@ -7,3 +7,14 @@ type:
 type:
   name: PainterService
   include: "src/services/painter_service.h"
+
+---
+type:
+  name: ShipService
+  include: "src/services/ship_service.h"
+
+---
+
+type:
+  name: AsteroidService
+  include: "src/services/asteroid_service.h"
