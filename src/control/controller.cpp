@@ -32,8 +32,9 @@ InputController::InputController(
   id = getNextId();
 }
 
-const Action& InputController::update(Time t, Observation o) {
+const Action& InputController::update(Time t, Observation o, int reward) {
   observations.push_back(std::shared_ptr<Observation>(&o));
+  rewards.push_back(reward);
   return update(t);
 }
 
@@ -47,8 +48,10 @@ const Action& InputController::update(Time t) {
   return *a;
 }
 
-const Action& RLController::update(Time t, Observation o) {
+const Action& RLController::update(Time t, Observation o, int reward) {
   auto a = std::make_shared<Action>(std::move(policy.getAction(o)));
+  observations.push_back(std::make_shared<Observation>(std::move(o)));
+  rewards.push_back(reward);
   actions.push_back(a);
   return *a;
 }

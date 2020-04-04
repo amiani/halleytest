@@ -9,7 +9,7 @@
 class Controller {
 public:
   const Action& getAction();
-  virtual const Action& update(Time t, Observation o) = 0;
+  virtual const Action& update(Time t, Observation o, int reward) = 0;
   virtual const Action& update(Time t) = 0;
   bool isObserver();
 
@@ -29,17 +29,17 @@ class InputController : public Controller {
 public:
   InputController(InputVirtual& device, Transform2DComponent& cameraTransform);
   InputController(InputVirtual& device, Transform2DComponent& cameraTransform, bool isObserver);
-  const Action& update(Time t, Observation o) override;
+  const Action& update(Time t, Observation o, int reward) override;
   const Action& update(Time t) override;
 
 private:
   InputVirtual device;
-  Transform2DComponent& cameraTransform;
+  const Transform2DComponent& cameraTransform;
 };
 
 class RLController : public Controller {
 public:
-  const Action& update(Halley::Time t, Observation o) override;
+  const Action& update(Halley::Time t, Observation o, int reward) override;
   const Action& update(Halley::Time t) override;
 
 private:

@@ -40,6 +40,8 @@ system:
   messages:
     - FireWeapon: send
     - ReachedGoal: receive
+  access:
+  - api
 
 ---
 
