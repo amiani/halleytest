@@ -12,6 +12,13 @@ component:
 ---
 
 component:
+  name: Observer
+  members:
+  - reward: float
+
+---
+
+component:
   name: WeaponControl
 
 ---
@@ -34,6 +41,8 @@ system:
     - Hardpoints: read
     - Body: write
     - Transform2D: write
+    - Observer: optional write
+    - Detector: read
   strategy: individual
   services:
     - ControllerService

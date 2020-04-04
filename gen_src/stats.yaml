@@ -10,8 +10,10 @@ system:
   families:
   - main:
     - Health: write
+    - Observer: optional write
   strategy: individual
   access:
     - world
   messages:
   - Hit: receive
+  - Impact: receive

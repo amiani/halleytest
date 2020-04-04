@@ -6,17 +6,19 @@ class ControlSystem final : public ControlSystemBase<ControlSystem> {
 public:
   void update(Halley::Time time, MainFamily& e) {
     if (terminal) {
-      updateController(time, e, 1);
+      updateController(time, e);
       getAPI().core->setStage(std::make_unique<GameStage>());
     } else {
-      auto& action = updateController(time, e, -1);
+      auto& action = updateController(time, e);
       applyAction(e, action);
     }
   }
 
-  const Action& updateController(Halley::Time time, MainFamily& e, int reward) {
+  const Action& updateController(Halley::Time time, MainFamily& e) {
     auto body = e.body.body;
-    if (e.shipControl.controller->isObserver()) {
+    if (e.observer.hasValue()) {
+      float reward = e.observer->reward;
+      e.observer->reward = 0;
       return e.shipControl.controller->update(time, Observation(), reward);
     } else {
       return e.shipControl.controller->update(time);

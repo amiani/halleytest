@@ -12,6 +12,15 @@ public:
       getWorld().destroyEntity(e.entityId);
     }
   }
+
+  void onMessageReceived(const ImpactMessage& msg, MainFamily& e) {
+    auto damage = msg.kineticEnergy / 20000;
+    std::cout << "damage: " << damage << std::endl;
+    e.health.health -= damage;
+    if (e.observer.hasValue()) {
+      e.observer->reward -= damage;
+    }
+  }
 };
 
 REGISTER_SYSTEM(DefensiveStatSystem)
