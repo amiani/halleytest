@@ -4,6 +4,7 @@ timelines:
   - Control
   - WeaponControl
   - Asteroid
+  - Ship
   - Physics
   - DefensiveStat
 

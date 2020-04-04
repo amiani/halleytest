@@ -6,3 +6,7 @@ ShipService::ShipService(const ConfigNode& node) {
     ships.emplace(ship.id, ship);
   }
 }
+
+ShipConfig ShipService::getShip(String id) {
+  return ships.at(id);
+}

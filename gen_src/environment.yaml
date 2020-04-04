@@ -6,3 +6,15 @@ system:
   access:
   - world
   - resources
+
+---
+system:
+  name: Ship
+  strategy: global
+  services:
+  - ShipService
+  - ControllerService
+  - InputService
+  access:
+  - world
+  - resources

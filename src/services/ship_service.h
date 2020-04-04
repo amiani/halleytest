@@ -7,6 +7,7 @@ using namespace Halley;
 class ShipService : public Service {
 public:
   ShipService(const ConfigNode& node);
+  ShipConfig getShip(String id);
 
 private:
   std::map<String, ShipConfig> ships;

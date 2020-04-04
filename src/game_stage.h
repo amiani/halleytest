@@ -16,6 +16,5 @@ public:
 
 private:
 	std::shared_ptr<PainterService> painterService;
-
 	std::shared_ptr<World> world;
 };
