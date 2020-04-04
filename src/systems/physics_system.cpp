@@ -6,36 +6,8 @@ class PhysicsSystem final : public PhysicsSystemBase<PhysicsSystem> {
 public:
   void init() {
     space.setDamping(.6);
-
-    space.addBeginCollisionHandler(PROJECTILEBODY, [this](cp::Arbiter arb, auto& s) {
-      auto laser = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
-      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
-      getWorld().destroyEntity(laser->getEntityId());
-      sendMessage(other->getEntityId(), HitMessage(10));
-      return false;
-    });
-
-    space.addBeginCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
-      auto sensor = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
-      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
-      auto& sensorComp = sensor->getComponent<SensorComponent>();
-      sensorComp.entities.push_back(other);
-      return false;
-    });
-
-    space.addSeparateCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
-      auto sensor = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
-      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
-      auto& es = sensor->getComponent<SensorComponent>().entities;
-      es.erase(std::remove(es.begin(), es.end(), other), es.end());
-    });
-
-    space.addBeginCollisionHandler(GOALBODY, PLAYERSHIPBODY, [this](cp::Arbiter arb, auto& s) {
-      auto playerBody = arb.getBodyB();
-      auto player = getEntity(playerBody);
-      sendMessage(player->getEntityId(), ReachedGoalMessage());
-      return false;
-    });
+    addCollisionHandlers();
+    addBoundaries();
   }
 
   void update(Halley::Time time) {
@@ -89,8 +61,58 @@ public:
     }
   }
 
+  void addCollisionHandlers() {
+    space.addBeginCollisionHandler(PROJECTILEBODY, [this](cp::Arbiter arb, auto& s) {
+      auto laser = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
+      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
+      getWorld().destroyEntity(laser->getEntityId());
+      sendMessage(other->getEntityId(), HitMessage(10));
+      return false;
+    });
+
+    space.addBeginCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
+      auto sensor = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
+      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
+      auto& sensorComp = sensor->getComponent<SensorComponent>();
+      sensorComp.entities.push_back(other);
+      return false;
+    });
+
+    space.addSeparateCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
+      auto sensor = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
+      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
+      auto& es = sensor->getComponent<SensorComponent>().entities;
+      es.erase(std::remove(es.begin(), es.end(), other), es.end());
+    });
+
+    space.addBeginCollisionHandler(GOALBODY, PLAYERSHIPBODY, [this](cp::Arbiter arb, auto& s) {
+      auto playerBody = arb.getBodyB();
+      auto player = getEntity(playerBody);
+      sendMessage(player->getEntityId(), ReachedGoalMessage());
+      return false;
+    });
+  }
+
   Halley::Entity* getEntity(cp::Body& body) {
     return reinterpret_cast<Halley::Entity*>(body.getUserData());
+  }
+
+  void addBoundaries() {
+    auto halfx = 1920/2;
+    auto halfy = 1080/2;
+    addBoundary(cp::Vect(-halfx, -halfy), cp::Vect(halfx, -halfy));
+    addBoundary(cp::Vect(halfx, -halfy), cp::Vect(halfx, halfy));
+    addBoundary(cp::Vect(halfx, halfy), cp::Vect(-halfx, halfy));
+    addBoundary(cp::Vect(-halfx, halfy), cp::Vect(-halfx, -halfy));
+  }
+
+  void addBoundary(cp::Vect a, cp::Vect b) {
+    auto& world = getWorld();
+    auto body = std::make_shared<cp::StaticBody>();
+    auto shape = std::make_shared<cp::SegmentShape>(body, a, b, 10);
+    world.createEntity()
+      .addComponent(BodyComponent(body))
+      .addComponent(ShapeComponent(shape));
   }
 
 private:
