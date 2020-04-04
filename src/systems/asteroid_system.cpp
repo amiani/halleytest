@@ -21,7 +21,9 @@ public:
     auto body = std::make_shared<cp::Body>(config.mass, moment);
     body->setPosition(cp::Vect(0, 100));
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
-    shape->setFilter({ .categories = 0b10000, .mask = 0b111111 });
+    shape->setFilter({
+      .categories = ASTEROID,
+      .mask = PLAYERHULL | PLAYERPROJECTILE | PLAYERDETECTOR });
     shape->setCollisionType(ASTEROID);
     getWorld().createEntity()
       .addComponent(HealthComponent(10))

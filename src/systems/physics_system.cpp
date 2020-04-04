@@ -7,7 +7,7 @@ public:
   void init() {
     space.setDamping(.6);
 
-    space.addBeginCollisionHandler(PROJECTILE, [this](cp::Arbiter arb, auto& s) {
+    space.addBeginCollisionHandler(PROJECTILEBODY, [this](cp::Arbiter arb, auto& s) {
       auto laser = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
       auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
       getWorld().destroyEntity(laser->getEntityId());
@@ -15,7 +15,7 @@ public:
       return false;
     });
 
-    space.addBeginCollisionHandler(SENSOR, [this](cp::Arbiter arb, auto& s) {
+    space.addBeginCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
       auto sensor = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
       auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
       auto& sensorComp = sensor->getComponent<SensorComponent>();
@@ -23,17 +23,17 @@ public:
       return false;
     });
 
-    space.addSeparateCollisionHandler(SENSOR, [this](cp::Arbiter arb, auto& s) {
+    space.addSeparateCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
       auto sensor = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
       auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
       auto& es = sensor->getComponent<SensorComponent>().entities;
       es.erase(std::remove(es.begin(), es.end(), other), es.end());
     });
 
-    space.addBeginCollisionHandler(GOAL, [this](cp::Arbiter arb, auto& s) {
-      auto body = arb.getBodyB();
-      auto other = getEntity(body);
-      sendMessage(other->getEntityId(), ReachedGoalMessage());
+    space.addBeginCollisionHandler(GOALBODY, PLAYERSHIPBODY, [this](cp::Arbiter arb, auto& s) {
+      auto playerBody = arb.getBodyB();
+      auto player = getEntity(playerBody);
+      sendMessage(player->getEntityId(), ReachedGoalMessage());
       return false;
     });
   }

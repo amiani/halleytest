@@ -40,11 +40,15 @@ public:
     cp::Float moment = cp::momentForCircle(config.mass, 0, config.radius);
     auto body = std::make_shared<cp::Body>(config.mass, moment);
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
-    shape->setFilter({ .categories = 0b1, .mask = 0b11100 });
-    shape->setCollisionType(PLAYERSHIP);
+    shape->setFilter({
+      .categories = PLAYERHULL,
+      .mask = GOAL | ASTEROID });
+    shape->setCollisionType(PLAYERSHIPBODY);
     auto sensor = std::make_shared<cp::CircleShape>(body, config.sensorRadius);
-    sensor->setFilter({ .categories = 0b100000, .mask = 0b10000 });
-    sensor->setCollisionType(SENSOR);
+    sensor->setFilter({
+      .categories = PLAYERDETECTOR,
+      .mask = GOAL | ASTEROID });
+    sensor->setCollisionType(DETECTORBODY);
     sensor->setSensor(true);
     auto sprite = Sprite()
       .setImage(getResources(), config.image)
@@ -82,9 +86,14 @@ public:
     body->setPosition(position);
     auto shape = std::make_shared<cp::CircleShape>(body, 50);
     shape->setSensor(true);
-    shape->setCollisionType(GOAL);
+    shape->setFilter({
+      .categories = GOAL,
+      .mask = PLAYERDETECTOR | PLAYERHULL
+    });
+    shape->setCollisionType(GOALBODY);
     auto sprite = Sprite()
       .setImage(getResources(), "target.png")
+      .setPivot(Halley::Vector2f(.5, .5))
       .scaleTo(Halley::Vector2f(100, 100));
     getWorld().createEntity("goal")
       .addComponent(BodyComponent(body))

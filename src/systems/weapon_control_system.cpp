@@ -4,6 +4,7 @@
 #include "components/sprite_component.h"
 #include "halley/src/engine/entity/include/halley/entity/components/transform_2d_component.h"
 #include "chipmunk.hpp"
+#include "src/utils.h"
 
 class WeaponControlSystem : public WeaponControlSystemBase<WeaponControlSystem> {
 public:
@@ -29,8 +30,10 @@ public:
     body->setVelocity(cp::Vect(x, y) * 500);
 
     auto shape = std::make_shared<cp::CircleShape>(body, radius);
-    shape->setCollisionType(1);
-    shape->setFilter({ .categories = 0b10, .mask = 0b11100 });
+    shape->setCollisionType(PROJECTILEBODY);
+    shape->setFilter({
+      .categories = PLAYERPROJECTILE,
+      .mask = ASTEROID });
 
     auto sprite = Sprite()
       .setImage(getResources(), e.weapon.config.projectileImage);
