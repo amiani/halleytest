@@ -43,6 +43,8 @@ set (SOURCES
         "src/game_stage.cpp"
         "src/utils.cpp"
         "src/config/weapon_config.cpp"
+        "src/config/asteroid_config.cpp"
+        "src/config/ship_config.cpp"
      )
 
 set (HEADERS
@@ -58,8 +60,10 @@ set (HEADERS
         "src/control/policy.h"
         "src/control/controller.h"
         "src/utils.h"
-        "src/hardpoint.h"
+        "src/config/hardpoint.h"
         "src/config/weapon_config.h"
+        "src/config/asteroid_config.h"
+        "src/config/ship_config.h"
      )
 
 set(GEN_DEFINITIONS
