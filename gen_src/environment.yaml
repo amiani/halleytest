@@ -1,0 +1,8 @@
+system:
+  name: Asteroid
+  strategy: global
+  services:
+  - AsteroidService
+  access:
+  - world
+  - resources

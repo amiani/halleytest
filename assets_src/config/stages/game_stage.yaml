@@ -3,6 +3,7 @@ timelines:
   fixedUpdate:
   - Control
   - WeaponControl
+  - Asteroid
   - Physics
   - DefensiveStat
 
