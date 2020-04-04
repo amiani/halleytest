@@ -33,7 +33,7 @@ InputController::InputController(
 }
 
 const Action& InputController::update(Time t, Observation o, int reward) {
-  observations.push_back(std::shared_ptr<Observation>(&o));
+  observations.push_back(std::make_shared<Observation>(o));
   rewards.push_back(reward);
   return update(t);
 }
