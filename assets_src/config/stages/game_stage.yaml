@@ -1,12 +1,12 @@
 ---
 timelines:
   fixedUpdate:
-  - Control
   - WeaponControl
   - Asteroid
   - Ship
-  - Physics
   - DefensiveStat
+  - Control
+  - Physics
 
   render:
   - SpriteRender
