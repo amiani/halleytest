@@ -1,6 +1,7 @@
 #include "systems/ship_system.h"
 #include "src/control/controller.h"
 #include "src/utils.h"
+#include "components/goal_component.h"
 #include "components/weapon_component.h"
 #include "components/ship_control_component.h"
 #include "components/weapon_control_component.h"
@@ -19,11 +20,9 @@ using namespace Halley;
 class ShipSystem final : public ShipSystemBase<ShipSystem> {
 public:
   void init(){
-    auto ship = spawnShip(shipService->getShip("large_grey"));
-    auto& device = inputService->getInput();
-    auto& transform = ship.getComponent<Transform2DComponent>();
-    auto c = controllerService->makeInputController(device, transform);
-    ship.addComponent(ShipControlComponent(c));
+    spawnPlayerShip(shipService->getShip("large_grey"));
+
+    spawnGoal();
   }
 
   void update(Time t) {}
@@ -66,6 +65,32 @@ public:
 
     laser.addComponent(Transform2DComponent(ship.getComponent<Transform2DComponent>(), Vector2f(25, 0)));
     return ship;
+  }
+
+  EntityRef spawnPlayerShip(const ShipConfig& config) {
+    auto ship = spawnShip(config);
+    auto& device = inputService->getInput();
+    auto& transform = ship.getComponent<Transform2DComponent>();
+    auto c = controllerService->makeInputController(device, transform);
+    ship.addComponent(ShipControlComponent(c));
+    return ship;
+  }
+
+  void spawnGoal() {
+    auto position = cp::Vect(200, 200);
+    auto body = std::make_shared<cp::Body>(1, 1);
+    body->setPosition(position);
+    auto shape = std::make_shared<cp::CircleShape>(body, 50);
+    shape->setSensor(true);
+    shape->setCollisionType(GOAL);
+    auto sprite = Sprite()
+      .setImage(getResources(), "target.png")
+      .scaleTo(Halley::Vector2f(100, 100));
+    getWorld().createEntity("goal")
+      .addComponent(BodyComponent(body))
+      .addComponent(Transform2DComponent())
+      .addComponent(ShapeComponent(shape))
+      .addComponent(SpriteComponent(sprite, 0, 1));
   }
 };
 

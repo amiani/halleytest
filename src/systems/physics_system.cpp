@@ -29,6 +29,13 @@ public:
       auto& es = sensor->getComponent<SensorComponent>().entities;
       es.erase(std::remove(es.begin(), es.end(), other), es.end());
     });
+
+    space.addBeginCollisionHandler(GOAL, [this](cp::Arbiter arb, auto& s) {
+      auto body = arb.getBodyB();
+      auto other = getEntity(body);
+      sendMessage(other->getEntityId(), ReachedGoalMessage());
+      return false;
+    });
   }
 
   void update(Halley::Time time) {
@@ -80,6 +87,10 @@ public:
         shapesToRemove.push_back(e.sensor->shape);
       }
     }
+  }
+
+  Halley::Entity* getEntity(cp::Body& body) {
+    return reinterpret_cast<Halley::Entity*>(body.getUserData());
   }
 
 private:

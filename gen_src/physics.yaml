@@ -62,3 +62,4 @@ system:
   - world
   messages:
   - Hit: send
+  - ReachedGoal: send

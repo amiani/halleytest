@@ -25,5 +25,9 @@ public:
       sendMessage(e.hardpoints.hardpoints.front().weaponId, FireWeaponMessage());
     }
   }
+
+  void onMessageReceived(const ReachedGoalMessage& msg, MainFamily& e) {
+    std::cout << "REACHED GOAL!\n";
+  }
 };
 REGISTER_SYSTEM(ControlSystem)

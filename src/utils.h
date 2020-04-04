@@ -13,5 +13,6 @@ enum BodyType {
   PROJECTILE,
   ENEMYSHIP,
   SENSOR,
-  ASTEROID
+  ASTEROID,
+  GOAL
 };

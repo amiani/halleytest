@@ -21,6 +21,11 @@ message:
 
 ---
 
+message:
+  name: ReachedGoal
+
+---
+
 system:
   name: Control
   families:
@@ -34,6 +39,7 @@ system:
     - ControllerService
   messages:
     - FireWeapon: send
+    - ReachedGoal: receive
 
 ---
 
