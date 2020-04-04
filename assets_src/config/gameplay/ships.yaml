@@ -4,7 +4,7 @@ ships:
     radius: 32
     pivot: [.5, .5]
     mass: 1
-    sensorRadius: 960
+    detectorRadius: 960
     hardpoints: [
       [25, 0]
     ]

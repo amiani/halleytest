@@ -45,8 +45,8 @@ public:
       e.body.body->setUserData(reinterpret_cast<cp::DataPointer>(entity));
       bodiesToAdd.push_back(e.body.body);
       shapesToAdd.push_back(e.shape.shape);
-      if (e.sensor.hasValue()) {
-        shapesToAdd.push_back(e.sensor->shape);
+      if (e.detector.hasValue()) {
+        shapesToAdd.push_back(e.detector->shape);
       }
     }
   }
@@ -55,8 +55,8 @@ public:
     for (auto& e : es) {
       bodiesToRemove.push_back(e.body.body);
       shapesToRemove.push_back(e.shape.shape);
-      if (e.sensor.hasValue()) {
-        shapesToRemove.push_back(e.sensor->shape);
+      if (e.detector.hasValue()) {
+        shapesToRemove.push_back(e.detector->shape);
       }
     }
   }
@@ -71,17 +71,17 @@ public:
     });
 
     space.addBeginCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
-      auto sensor = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
+      auto detector = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
       auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
-      auto& sensorComp = sensor->getComponent<SensorComponent>();
-      sensorComp.entities.push_back(other);
+      auto& detectorComp = detector->getComponent<DetectorComponent>();
+      detectorComp.entities.push_back(other);
       return false;
     });
 
     space.addSeparateCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
-      auto sensor = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
+      auto detector = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
       auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
-      auto& es = sensor->getComponent<SensorComponent>().entities;
+      auto& es = detector->getComponent<DetectorComponent>().entities;
       es.erase(std::remove(es.begin(), es.end(), other), es.end());
     });
 
@@ -91,9 +91,15 @@ public:
       sendMessage(player->getEntityId(), ReachedGoalMessage());
       return false;
     });
+
+    space.addPostSolveCollisionHandler(PLAYERSHIPBODY, [this](cp::Arbiter arb, auto& s) {
+      auto player = getEntity(arb.getBodyA());
+      auto ke = arb.totalKineticEnergy();
+      sendMessage(player->getEntityId(), ImpactMessage(ke));
+    });
   }
 
-  Halley::Entity* getEntity(cp::Body& body) {
+  Halley::Entity* getEntity(const cp::Body& body) {
     return reinterpret_cast<Halley::Entity*>(body.getUserData());
   }
 

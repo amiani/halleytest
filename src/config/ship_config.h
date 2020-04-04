@@ -10,7 +10,7 @@ struct ShipConfig {
   String id;
   float mass;
   float radius;
-  float sensorRadius;
+  float detectorRadius;
   String image;
   std::vector<Hardpoint> hardpoints;
 };

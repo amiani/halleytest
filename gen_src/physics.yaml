@@ -31,7 +31,7 @@ component:
 ---
 
 component:
-  name: Sensor
+  name: Detector
   members:
   - shape: std::shared_ptr<cp::Shape>
   - entities: std::vector<Halley::Entity*>
@@ -45,21 +45,29 @@ message:
 
 ---
 
+message:
+  name: Impact
+  members:
+  - kineticEnergy: double
+
+---
+
 system:
   name: Physics
   families:
   - physical:
     - Body: read
     - Shape: read
-    - Sensor: optional read
+    - Detector: optional read
   - bodies:
     - Body: read
     - Transform2D: write
-  - sensors:
-    - Sensor: write
+  - detectors:
+    - Detector: write
   strategy: global
   access:
   - world
   messages:
   - Hit: send
+  - Impact: send
   - ReachedGoal: send

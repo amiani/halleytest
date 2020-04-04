@@ -3,13 +3,14 @@
 #include "src/utils.h"
 #include "components/goal_component.h"
 #include "components/weapon_component.h"
+#include "components/observer_component.h"
 #include "components/ship_control_component.h"
 #include "components/weapon_control_component.h"
 #include "components/sprite_component.h"
 #include "components/health_component.h"
 #include "components/background_camera_component.h"
 #include "components/body_component.h"
-#include "components/sensor_component.h"
+#include "components/detector_component.h"
 #include "components/hardpoints_component.h"
 #include "components/shape_component.h"
 //#include "src/config/hardpoint.h"
@@ -44,12 +45,12 @@ public:
       .categories = PLAYERHULL,
       .mask = GOAL | ASTEROID });
     shape->setCollisionType(PLAYERSHIPBODY);
-    auto sensor = std::make_shared<cp::CircleShape>(body, config.sensorRadius);
-    sensor->setFilter({
+    auto detector = std::make_shared<cp::CircleShape>(body, config.detectorRadius);
+    detector->setFilter({
       .categories = PLAYERDETECTOR,
       .mask = GOAL | ASTEROID });
-    sensor->setCollisionType(DETECTORBODY);
-    sensor->setSensor(true);
+    detector->setCollisionType(DETECTORBODY);
+    detector->setSensor(true);
     auto sprite = Sprite()
       .setImage(getResources(), config.image)
       .setPivot(Vector2f(.5f, .5f));
@@ -60,7 +61,8 @@ public:
     auto& ship = world.createEntity()
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape))
-      .addComponent(SensorComponent(sensor, std::vector<Entity*>()))
+      .addComponent(DetectorComponent(detector, std::vector<Entity*>()))
+      .addComponent(ObserverComponent())
       .addComponent(HealthComponent(100))
       .addComponent(SpriteComponent(sprite, 0, 1))
       .addComponent(HardpointsComponent(std::vector<Hardpoint>{h}))
