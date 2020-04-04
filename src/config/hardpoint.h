@@ -6,5 +6,5 @@ using namespace Halley;
 
 struct Hardpoint {
   Vector2f offset;
-  EntityId id;
+  EntityId weaponId;
 };

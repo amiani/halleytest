@@ -22,7 +22,7 @@ public:
     body->setAngle(angle);
 
     if (a.fire && !e.hardpoints.hardpoints.empty()) {
-      sendMessage(e.hardpoints.hardpoints.front().id, FireWeaponMessage());
+      sendMessage(e.hardpoints.hardpoints.front().weaponId, FireWeaponMessage());
     }
   }
 };

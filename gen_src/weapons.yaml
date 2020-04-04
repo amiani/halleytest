@@ -6,7 +6,7 @@ type:
 
 type:
   name: std::vector<Hardpoint>
-  include: "src/hardpoint.h"
+  include: "src/config/hardpoint.h"
 
 ---
 
