@@ -9,11 +9,12 @@ struct EntityData {
   double rotation;
   cp::Vect velocity;
   int health;
+  std::array<float, 6> toBlob();
 };
 
 struct Observation {
   EntityData self;
-  EntityData enemies[1];
-  EntityData envBodies[30];
+  //EntityData enemies[1];
+  std::vector<EntityData> detectedBodies;
   //EntityData allies[1];
 };

@@ -43,5 +43,5 @@ public:
   const Action& update(Halley::Time t) override;
 
 private:
-  Policy policy;
+  Policy policy = Policy("src/control/feedforward.pt");
 };
