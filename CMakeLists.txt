@@ -1,6 +1,6 @@
 cmake_minimum_required (VERSION 3.10)
 
-project (halleytest)
+project (spacerl)
 
 set(HALLEY_PROJECT_EMBED 1)
 set(HALLEY_PATH ${CMAKE_CURRENT_SOURCE_DIR}/halley)
@@ -10,7 +10,7 @@ include(HalleyProject)
 
 set(CHIPMUNKPP_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/chipmunkpp)
 
-set(CMAKE_PREFIX_PATH "/home/amiani/projects/halleytest/lib/libtorch")
+set(CMAKE_PREFIX_PATH "/home/amiani/projects/spacerl/lib/libtorch")
 find_package(Torch REQUIRED)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${TORCH_CXX_FLAGS}")
 
@@ -35,6 +35,7 @@ set (SOURCES
         "src/game.cpp"
         "src/control/controller.cpp"
         "src/control/policy.cpp"
+        "src/control/observation.cpp"
         "src/services/input_service.cpp"
         "src/services/controller_service.cpp"
         "src/services/ship_service.cpp"
@@ -70,4 +71,4 @@ set(GEN_DEFINITIONS
         )
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-copy")
-halleyProject(halleytest "${SOURCES}" "${HEADERS}" "${GEN_DEFINITIONS}" ${CMAKE_CURRENT_SOURCE_DIR}/bin)
+halleyProject(spacerl "${SOURCES}" "${HEADERS}" "${GEN_DEFINITIONS}" ${CMAKE_CURRENT_SOURCE_DIR}/bin)
