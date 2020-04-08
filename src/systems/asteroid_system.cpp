@@ -24,7 +24,7 @@ public:
     shape->setFilter({
       .categories = ASTEROID,
       .mask = PLAYERHULL | PLAYERPROJECTILE | PLAYERDETECTOR });
-    shape->setCollisionType(ASTEROID);
+    shape->setCollisionType(ASTEROIDBODY);
     getWorld().createEntity()
       .addComponent(HealthComponent(10))
       .addComponent(BodyComponent(body))
@@ -35,7 +35,6 @@ public:
         .setPivot(Vector2f(.5f, .5f))
         .scaleTo(Vector2f(2*config.radius, 2*config.radius)),
         0, 1));
-
   }
 };
 

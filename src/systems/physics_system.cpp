@@ -106,16 +106,18 @@ public:
   void addBoundaries() {
     auto halfx = 1920/2;
     auto halfy = 1080/2;
-    addBoundary(cp::Vect(-halfx, -halfy), cp::Vect(halfx, -halfy));
-    addBoundary(cp::Vect(halfx, -halfy), cp::Vect(halfx, halfy));
-    addBoundary(cp::Vect(halfx, halfy), cp::Vect(-halfx, halfy));
-    addBoundary(cp::Vect(-halfx, halfy), cp::Vect(-halfx, -halfy));
+    addBoundary(cp::Vect(0, -halfy), cp::Vect(-halfx, 0), cp::Vect(halfx, 0));
+    addBoundary(cp::Vect(-halfx, 0), cp::Vect(0, -halfy), cp::Vect(0, halfy));
+    addBoundary(cp::Vect(0, halfy), cp::Vect(-halfx, 0), cp::Vect(halfx, 0));
+    addBoundary(cp::Vect(halfx, 0), cp::Vect(0, -halfy), cp::Vect(0, halfy));
   }
 
-  void addBoundary(cp::Vect a, cp::Vect b) {
+  void addBoundary(cp::Vect pos, cp::Vect a, cp::Vect b) {
     auto& world = getWorld();
     auto body = std::make_shared<cp::StaticBody>();
+    body->setPosition(pos);
     auto shape = std::make_shared<cp::SegmentShape>(body, a, b, 10);
+    shape->setFilter({ .categories = BOUNDARY });
     world.createEntity()
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape));
