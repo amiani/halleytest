@@ -11,5 +11,5 @@ public:
 
 private:
   torch::jit::script::Module module;
-  std::array<float, 31> observationToBlob(Observation& o);
+  std::array<float, 6*31> observationToBlob(Observation& o);
 };
