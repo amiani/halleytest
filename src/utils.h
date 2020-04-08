@@ -22,5 +22,6 @@ enum CollisionFilter {
   PLAYERDETECTOR = (1u << 1),
   PLAYERPROJECTILE = (1u << 2),
   GOAL = (1u << 3),
-  ASTEROID = (1u << 4)
+  ASTEROID = (1u << 4),
+  BOUNDARY = (1u << 5)
 };
