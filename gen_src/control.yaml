@@ -43,6 +43,7 @@ system:
     - Transform2D: write
     - Observer: optional write
     - Detector: read
+    - Health: read
   strategy: individual
   services:
     - ControllerService

@@ -14,12 +14,38 @@ public:
     }
   }
 
+  Observation makeObservation(MainFamily& e) {
+    auto o = Observation();
+    o.self = makeEntityData(*e.body.body, e.health.health);
+    for (auto& other : e.detector.entities) {
+      if (other->isAlive()) {
+        auto& bodyComponent = other->getComponent<BodyComponent>();
+        auto& body = bodyComponent.body;
+        //auto& health = other->getComponent<HealthComponent>().health;
+        o.detectedBodies.push_back(makeEntityData(*body, 10));
+      }
+    }
+    return o;
+  }
+
+  EntityData makeEntityData(cp::Body& body, int health) {
+    auto e = (Halley::Entity*)body.getUserData();
+    auto eId = e->getEntityId().toString();
+    return {
+      .position = body.getPosition(),
+      .rotation = body.getAngle(),
+      .velocity = body.getVelocity(),
+      .health = health
+    };
+  }
+
   const Action& updateController(Halley::Time time, MainFamily& e) {
     auto body = e.body.body;
     if (e.observer.hasValue()) {
+      auto observation = makeObservation(e);
       float reward = e.observer->reward;
       e.observer->reward = 0;
-      return e.shipControl.controller->update(time, Observation(), reward);
+      return e.shipControl.controller->update(time, observation, reward);
     } else {
       return e.shipControl.controller->update(time);
     }
