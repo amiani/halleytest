@@ -19,8 +19,13 @@ set_target_properties(libchipmunk PROPERTIES IMPORTED_LOCATION "${CHIPMUNKPP_PAT
 add_library(libchipmunkpp STATIC IMPORTED)
 set_target_properties(libchipmunkpp PROPERTIES IMPORTED_LOCATION "${CHIPMUNKPP_PATH}/libchipmunk++.a")
 
+set(ENV{PKG_CONFIG_PATH} "/opt/mongo-cxx-driver/lib/pkgconfig")
+find_package(PkgConfig REQUIRED)
+pkg_search_module(MONGOCXX REQUIRED IMPORTED_TARGET libmongocxx)
+
 link_libraries(
         ${TORCH_LIBRARIES}
+        PkgConfig::MONGOCXX
         libchipmunkpp
         libchipmunk
 )
@@ -35,7 +40,8 @@ set (SOURCES
         "src/game.cpp"
         "src/control/controller.cpp"
         "src/control/policy.cpp"
-        "src/control/observation.cpp"
+        "src/control/mdp.cpp"
+        "src/control/learner.cpp"
         "src/services/input_service.cpp"
         "src/services/controller_service.cpp"
         "src/services/ship_service.cpp"
@@ -56,10 +62,10 @@ set (HEADERS
         "src/services/asteroid_service.h"
         "src/title_stage.h"
         "src/game_stage.h"
-        "src/control/action.h"
-        "src/control/observation.h"
         "src/control/policy.h"
         "src/control/controller.h"
+        "src/control/mdp.h"
+        "src/control/learner.h"
         "src/utils.h"
         "src/config/hardpoint.h"
         "src/config/weapon_config.h"
