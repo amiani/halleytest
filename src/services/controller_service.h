@@ -1,7 +1,6 @@
 #pragma once
 
-#include "src/control/action.h"
-#include "src/control/observation.h"
+#include "src/control/mdp.h"
 #include "src/control/controller.h"
 #include <halley.hpp>
 using namespace Halley;

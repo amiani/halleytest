@@ -1,9 +1,9 @@
 #pragma once
 
 #include <halley.hpp>
-#include "action.h"
+#include "mdp.h"
 #include "policy.h"
-#include "observation.h"
+#include "mdp.h"
 #include "halley/src/engine/entity/include/halley/entity/components/transform_2d_component.h"
 
 class Controller {
@@ -16,6 +16,7 @@ public:
 protected:
   int id;
   static int getNextId();
+  void saveTrajectory();
   std::vector<std::shared_ptr<Action>> actions;
   std::vector<std::shared_ptr<Observation>> observations;
   std::vector<int> rewards;
