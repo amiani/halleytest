@@ -5,17 +5,20 @@
 class ControlSystem final : public ControlSystemBase<ControlSystem> {
 public:
   void update(Halley::Time time, MainFamily& e) {
+    if (frames >= 100) terminal = true;
     if (terminal) {
-      updateController(time, e);
+      updateController(time, e, true);
       getAPI().core->setStage(std::make_unique<GameStage>());
     } else {
-      auto& action = updateController(time, e);
+      auto& action = updateController(time, e, false);
       applyAction(e, action);
     }
+    frames++;
   }
 
-  Observation makeObservation(MainFamily& e) {
+  Observation makeObservation(MainFamily& e, bool isTerminal) {
     auto o = Observation();
+    o.terminal = isTerminal;
     o.self = makeEntityData(*e.body.body, e.health.health);
     for (auto& other : e.detector.entities) {
       if (other->isAlive()) {
@@ -39,10 +42,10 @@ public:
     };
   }
 
-  const Action& updateController(Halley::Time time, MainFamily& e) {
+  const Action& updateController(Halley::Time time, MainFamily& e, bool isTerminal) {
     auto body = e.body.body;
     if (e.observer.hasValue()) {
-      auto observation = makeObservation(e);
+      auto observation = makeObservation(e, isTerminal);
       float reward = e.observer->reward;
       e.observer->reward = 0;
       return e.shipControl.controller->update(time, observation, reward);
@@ -72,5 +75,6 @@ public:
 
 private:
   bool terminal = false;
+  int frames = 0;
 };
 REGISTER_SYSTEM(ControlSystem)
