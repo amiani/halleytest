@@ -4,7 +4,7 @@
 #include "mdp.h"
 #include "policy.h"
 #include "mdp.h"
-#include "learner.h"
+#include "trainer.h"
 #include "halley/src/engine/entity/include/halley/entity/components/transform_2d_component.h"
 
 class Controller {
@@ -47,5 +47,5 @@ public:
 
 private:
   Policy policy = Policy("src/control/actor.pt");
-  ActorCritic learner = ActorCritic("src/control/actor.pt", "src/control/critic.pt");
+  ActorCritic trainer = ActorCritic("src/control/actor.pt", "src/control/critic.pt");
 };

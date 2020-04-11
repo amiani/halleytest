@@ -66,7 +66,7 @@ const Action& RLController::update(Time time, Observation o, int reward) {
   if (o.terminal) {
     saveTrajectory();
     auto data = std::vector<Trajectory>{trajectory};
-    learner.improve(data);
+    trainer.improve(data);
   } else {
     actions.push_back(a);
     trajectory.push_back({ .observation = o, .action = *a });

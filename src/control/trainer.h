@@ -7,29 +7,22 @@
 
 using namespace torch;
 
-class Learner {
+class Trainer {
 public:
   virtual Policy improve(std::vector<std::vector<Transition>>&) =0;
 };
 
-class ActorCritic : public Learner {
+class ActorCritic : public Trainer {
 public:
   ActorCritic(String, String);
   Policy improve(std::vector<std::vector<Transition>>&) override;
 
 private:
-  struct ACTransition {
-    ACTransition(Transition);
-    Observation& observation;
-    Action& action;
-    float reward;
-    Observation& next;
-    float target;
-    float advantage;
-  };
-  std::tuple<Tensor, Tensor, Tensor> trajectoriesToTensors(std::vector<Trajectory>&);
+  std::tuple<Tensor, Tensor, Tensor, Tensor> trajectoriesToTensors(std::vector<Trajectory>&);
   jit::Module actor;
   jit::Module critic;
-  std::vector<Tensor> parameters;
+  std::vector<Tensor> actorParameters;
+  std::vector<Tensor> criticParameters;
+  std::unique_ptr<torch::optim::Optimizer> actorOptimizer;
   std::unique_ptr<torch::optim::Optimizer> criticOptimizer;
 };

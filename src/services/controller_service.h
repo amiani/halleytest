@@ -2,7 +2,7 @@
 
 #include "src/control/mdp.h"
 #include "src/control/controller.h"
-#include "src/control/learner.h"
+#include "src/control/trainer.h"
 #include <halley.hpp>
 using namespace Halley;
 
