@@ -10,7 +10,8 @@ Policy::Policy(String path) {
 Policy::Policy(torch::jit::script::Module module) : module(module) {}
 
 Action Policy::act(Observation& o) {
-  auto input = torch::from_blob(o.toBlob().data(), { 6*31 });
+  auto input = o.toTensor();
+  //std::cout << "act: " << input << std::endl;
   auto inputs = std::vector<torch::jit::IValue>{input};
   torch::Tensor output = module.forward(inputs).toTensor();
   auto throttleProb = output.narrow(0, 0, 1);

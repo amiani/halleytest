@@ -13,7 +13,6 @@ ActorCritic::ActorCritic(String actorPath, String criticPath)
 Policy ActorCritic::improve(std::vector<std::vector<Transition>>& trajectories) {
   //calculate targets for critic update
   auto [obs, actionLogProbs, rewards, nexts] = trajectoriesToTensors(trajectories);
-
   auto inputs = std::vector<torch::jit::IValue>{nexts};
   auto nextValuesOld = critic.forward(inputs).toTensor().detach();
   inputs[0] = obs;
@@ -43,28 +42,25 @@ Policy ActorCritic::improve(std::vector<std::vector<Transition>>& trajectories) 
 }
 
 std::tuple<Tensor, Tensor, Tensor, Tensor> ActorCritic::trajectoriesToTensors(std::vector<Trajectory>& trajectories) {
-  std::vector<float> obsVec;
-  std::vector<float> nextVec;
-  std::vector<float> rewardsVec;
-  std::vector<Tensor> actionLogProbsVec;
+  std::vector<Tensor> obs;
+  std::vector<Tensor> nexts;
+  std::vector<float> rewards;
+  std::vector<Tensor> logProbs;
   int N = 0;
   for (auto& trajectory : trajectories) {
     for (auto& transition : trajectory) {
-      auto obs = transition.observation.toBlob();
-      obsVec.insert(obsVec.end(), obs.begin(), obs.end());
+      obs.push_back(transition.observation.toTensor());
+      logProbs.push_back(transition.action.logProb);
+      rewards.push_back(transition.reward);
+      nexts.push_back(transition.next.toTensor());
 
-      actionLogProbsVec.push_back(transition.action.logProb);
-
-      rewardsVec.push_back(transition.reward);
-
-      auto n = transition.next.toBlob();
-      nextVec.insert(nextVec.end(), n.begin(), n.end());
       N++;
     }
   }
-  auto obs = torch::from_blob(obsVec.data(), { N, 6*31 });
-  auto actionLogProbs = torch::cat(actionLogProbsVec);
-  auto rewards = torch::from_blob(rewardsVec.data(), { N, 1});
-  auto nexts = torch::from_blob(nextVec.data(), { N, 6*31 });
-  return { obs, actionLogProbs, rewards, nexts };
+  return {
+    torch::stack(obs),
+    torch::cat(logProbs),
+    torch::from_blob(rewards.data(), N),
+    torch::stack(nexts)
+  };
 }

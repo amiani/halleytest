@@ -9,8 +9,12 @@ struct EntityData {
   cp::Vect position;
   double rotation;
   cp::Vect velocity;
-  int health;
+  float health;
   std::array<float, 6> toBlob();
+  EntityData normalize();
+  static const cp::Vect spaceSize;
+  static const cp::Vect maxVelocity;
+  static const int maxHealth = 1000;
 };
 
 struct Observation {
@@ -19,7 +23,8 @@ struct Observation {
   //EntityData enemies[1];
   std::vector<EntityData> detectedBodies;
   //EntityData allies[1];
-  std::array<float, 6*31> toBlob();
+  torch::Tensor toTensor();
+  static const int dim = 6*31;
 };
 
 struct Action {
