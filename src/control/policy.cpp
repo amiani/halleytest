@@ -15,7 +15,7 @@ Action Policy::act(Observation& o) {
   torch::Tensor output = module.forward(inputs).toTensor();
   auto throttleProb = output.narrow(0, 0, 1);
   auto fireProb = output.narrow(0, 1, 1);
-  auto loc = output.narrow(0, 2, 2);  //do loc and scale have to be transformed somehow?
+  auto loc = output.narrow(0, 2, 2);  //TODO: do loc and scale have to be transformed somehow?
   auto scale = output.narrow(0, 4, 2);
   auto throttleBern = Bernoulli(nullptr, &throttleProb);
   auto fireBern = Bernoulli(nullptr, &fireProb);
@@ -25,7 +25,7 @@ Action Policy::act(Observation& o) {
   auto targetSample = targetNormal.sample();
   auto logProb = throttleBern.log_prob(throttleSample)
     .add(fireBern.log_prob(fireSample))
-    .add(targetNormal.log_prob(targetSample));
+    .add(targetNormal.log_prob(targetSample).sum());  //TODO: can I just sum the log_prob vector here???
   auto targetData = targetSample.data<float>();
   return {
     .throttle = throttleSample.item<bool>(),
