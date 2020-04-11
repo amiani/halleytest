@@ -5,13 +5,15 @@
 class ControlSystem final : public ControlSystemBase<ControlSystem> {
 public:
   void update(Halley::Time time, MainFamily& e) {
-    if (frames >= 100) terminal = true;
-    if (terminal) {
-      updateController(time, e, true);
-      getAPI().core->setStage(std::make_unique<GameStage>());
-    } else {
-      auto& action = updateController(time, e, false);
-      applyAction(e, action);
+    if (frames % 8 == 0) {
+      if (frames >= 100) terminal = true;
+      if (terminal) {
+        updateController(time, e, true);
+        getAPI().core->setStage(std::make_unique<GameStage>());
+      } else {
+        auto& action = updateController(time, e, false);
+        applyAction(e, action);
+      }
     }
     frames++;
   }
