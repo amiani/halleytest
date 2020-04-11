@@ -1,6 +1,7 @@
 #pragma once
 
 #include "chipmunk.hpp"
+#include "torch/torch.h"
 #include <halley.hpp>
 using namespace Halley;
 
@@ -25,6 +26,7 @@ struct Action {
   bool throttle = false;
   bool fire = false;
   cp::Vect target = cp::Vect();
+  torch::Tensor logProb;
 };
 
 struct Transition {
