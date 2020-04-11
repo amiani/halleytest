@@ -1,35 +1,36 @@
 #include "policy.h"
+#include "distributions/normal.h"
+#include "distributions/bernoulli.h"
 
 Policy::Policy(String path) {
   module = torch::jit::load(path);
   //module.to(at::kCUDA);
 }
 
-Action Policy::getAction(Observation& o) {
-  std::vector<torch::jit::IValue> inputs;
-  auto obsBlob = observationToBlob(o);
-  auto input = torch::from_blob(obsBlob.data(), { 6*31 });
-  //auto input = torch::randn({ 6*31 });
-  inputs.push_back(input);
-  at::Tensor output = module.forward(inputs).toTensor();
-  auto acc = output.accessor<float, 1>();
-  auto target = cp::Vect(acc[2] * 1920 / 2, acc[3] * 1080 / 2);
-  return {
-    .throttle = acc[0] > 0,
-    .fire = acc[1] > 0,
-    .target = cp::Vect(acc[2], acc[3])
-  };
-}
+Policy::Policy(torch::jit::script::Module module) : module(module) {}
 
-std::array<float, 6*31> Policy::observationToBlob(Observation& o) {
-  std::array<float, 6*31> blob;
-  blob.fill(0);
-  
-  auto selfBlob = o.self.toBlob();
-  std::copy(selfBlob.begin(), selfBlob.end(), blob.begin());
-  for (int i = 0; i != 30, i != o.detectedBodies.size(); ++i) {
-    auto entBlob = o.detectedBodies[i].toBlob();
-    std::copy(entBlob.begin(), entBlob.end(), blob.begin() + (6*(i+1)));
-  }
-  return blob;
+Action Policy::getAction(Observation& o) {
+  auto input = torch::from_blob(o.toBlob().data(), { 6*31 });
+  auto inputs = std::vector<torch::jit::IValue>{input};
+  torch::Tensor output = module.forward(inputs).toTensor();
+  auto throttleProb = output.narrow(0, 0, 1);
+  auto fireProb = output.narrow(0, 1, 1);
+  auto loc = output.narrow(0, 2, 2);  //do loc and scale have to be transformed somehow?
+  auto scale = output.narrow(0, 4, 2);
+  auto throttleBern = Bernoulli(nullptr, &throttleProb);
+  auto fireBern = Bernoulli(nullptr, &fireProb);
+  auto targetNormal = Normal(loc, scale);
+  auto throttleSample = throttleBern.sample();
+  auto fireSample = fireBern.sample();
+  auto targetSample = targetNormal.sample();
+  auto logProb = throttleBern.log_prob(throttleSample)
+    .add(fireBern.log_prob(fireSample))
+    .add(targetNormal.log_prob(targetSample));
+  auto targetData = targetSample.data<float>();
+  return {
+    .throttle = throttleSample.item<bool>(),
+    .fire = fireSample.item<bool>(),
+    .target = cp::Vect(targetData[0], targetData[1]),
+    .logProb = logProb
+  };
 }
