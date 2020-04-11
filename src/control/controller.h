@@ -9,7 +9,7 @@
 
 class Controller {
 public:
-  const Action& getAction();
+  const Action& act();
   virtual const Action& update(Time t, Observation o, int reward) = 0;
   virtual const Action& update(Time t) = 0;
   bool isObserver();

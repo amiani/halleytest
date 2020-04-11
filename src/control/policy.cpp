@@ -9,7 +9,7 @@ Policy::Policy(String path) {
 
 Policy::Policy(torch::jit::script::Module module) : module(module) {}
 
-Action Policy::getAction(Observation& o) {
+Action Policy::act(Observation& o) {
   auto input = torch::from_blob(o.toBlob().data(), { 6*31 });
   auto inputs = std::vector<torch::jit::IValue>{input};
   torch::Tensor output = module.forward(inputs).toTensor();

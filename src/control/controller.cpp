@@ -2,7 +2,7 @@
 #include "chipmunk.hpp"
 #include "src/utils.h"
 
-const Action& Controller::getAction() {
+const Action& Controller::act() {
   return *actions.back();
 }
 
@@ -62,7 +62,7 @@ const Action& RLController::update(Time time, Observation o, int reward) {
     trajectory.back().next = o;
     trajectory.back().reward = reward;
   }
-  auto a = std::make_shared<Action>(std::move(policy.getAction(o)));
+  auto a = std::make_shared<Action>(std::move(policy.act(o)));
   if (o.terminal) {
     saveTrajectory();
     auto data = std::vector<Trajectory>{trajectory};
