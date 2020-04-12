@@ -11,10 +11,14 @@ std::shared_ptr<InputController> ControllerService::makeInputController(
 
 std::shared_ptr<RLController> ControllerService::makeRLController() {
   auto c = std::make_shared<RLController>();
-  controllers.push_back(c);
+  rlControllers.push_back(c);
   return c;
 }
 
 Controller& ControllerService::getController(int id) {
   return *controllers[id];
+}
+
+std::shared_ptr<RLController> ControllerService::getRLController() {
+  return rlControllers.empty() ? makeRLController() : rlControllers[0];
 }

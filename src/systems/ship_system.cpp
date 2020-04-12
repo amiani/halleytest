@@ -78,7 +78,7 @@ public:
     auto& device = inputService->getInput();
     auto& transform = ship.getComponent<Transform2DComponent>();
     //auto c = controllerService->makeInputController(device, transform);
-    auto c = controllerService->makeRLController();
+    auto c = controllerService->getRLController();
     ship.addComponent(ShipControlComponent(c));
     return ship;
   }

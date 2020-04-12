@@ -17,6 +17,7 @@ public:
 	std::unique_ptr<Stage> startGame(const HalleyAPI* api) override;
 
 	std::shared_ptr<InputService> getInputService() const;
+	std::shared_ptr<ControllerService> getControllerService() const;
 	float getZoom() const;
 
 	bool shouldCreateSeparateConsole() const override;
@@ -26,4 +27,5 @@ private:
 	float zoom = 1;
 	
 	std::shared_ptr<InputService> inputService;
+	std::shared_ptr<ControllerService> controllerService;
 };

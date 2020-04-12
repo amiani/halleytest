@@ -21,7 +21,7 @@ void GameStage::init()
 	world = createWorld("stages/game_stage", createSystem, createComponent);
 	world->addService(painterService);
 	world->addService(game.getInputService());
-  world->addService(std::make_shared<ControllerService>());
+  world->addService(game.getControllerService());
   auto asteroidService = std::make_shared<AsteroidService>(res.get<ConfigFile>("gameplay/celestial_bodies")->getRoot());
   world->addService(asteroidService);
   auto shipService = std::make_shared<ShipService>(res.get<ConfigFile>("gameplay/ships")->getRoot());
