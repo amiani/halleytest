@@ -1,6 +1,7 @@
 #include "controller.h"
 #include "chipmunk.hpp"
 #include "src/utils.h"
+#include <chrono>
 
 bool Controller::isObserver() {
   return _isObserver;
@@ -46,12 +47,25 @@ const Action& InputController::update(Time t) {
   return *a;
 }
 
+auto start = std::chrono::high_resolution_clock::now();
 const Action& RLController::update(Time time, Observation o, int reward) {
   rewards.push_back(reward);
   auto a = std::make_shared<Action>(std::move(policy.act(o)));
   if (o.terminal) {
     batch.addTrajectory(observations, actions, rewards);
-    trainer.improve(batch);
+    observations.clear();
+    actions.clear();
+    rewards.clear();
+    std::cout << "got trajectory: " << batch.getNumTrajectories() << std::endl;
+    auto stop = std::chrono::high_resolution_clock::now();
+    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << " milliseconds\n";
+    start = std::chrono::high_resolution_clock::now();
+    if (batch.getNumTrajectories() > 1000) {
+      std::cout << "~~~~GOT BATCH~~~~\n";
+      policy = trainer.improve(batch);
+      batch = Batch();
+      std::cout << "processed batch\n";
+    }
   } else {
     observations.push_back(std::make_shared<Observation>(std::move(o)));
     actions.push_back(a);
