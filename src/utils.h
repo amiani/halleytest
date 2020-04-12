@@ -2,11 +2,14 @@
 
 #include "chipmunk.hpp"
 #include <halley.hpp>
+#include "torch/torch.h"
 
 Halley::Vector2f chipToScreen(cp::Vect, cp::Vect);
 cp::Vect screenToChip(Halley::Vector2f, cp::Vect);
 Halley::Vector2f chipToHalley(const cp::Vect&);
 cp::Vect halleyToChip(const Halley::Vector2f);
+
+const torch::Device DEVICE(torch::kCPU);
 
 enum BodyType {
   PLAYERSHIPBODY,

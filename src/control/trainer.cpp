@@ -1,21 +1,24 @@
 #include "trainer.h"
+#include "src/utils.h"
 #include "torch/nn/functional.h"
 namespace F = torch::nn::functional;
+using namespace torch::indexing;
 
 ActorCritic::ActorCritic(String actorPath, String criticPath)
   : actor(torch::jit::load(actorPath)),
     critic(torch::jit::load(criticPath)) {
 
+  actor.to(DEVICE);
+  critic.to(DEVICE);
   for (const auto& p : actor.parameters()) { actorParameters.push_back(p); }
   for (const auto& p : critic.parameters()) { criticParameters.push_back(p); }
   actorOptimizer = std::make_unique<torch::optim::Adam>(actorParameters, torch::optim::AdamOptions(.001));
   criticOptimizer = std::make_unique<torch::optim::Adam>(criticParameters, torch::optim::AdamOptions(.001));
 }
 
-using namespace torch::indexing;
 Policy ActorCritic::improve(Batch& batch) {
   //calculate targets for critic update
-  auto inputs = std::vector<torch::jit::IValue>{batch.observations};
+  auto inputs = std::vector<torch::jit::IValue>{batch.observations.to(DEVICE)};
   auto valuesOld = critic.forward(inputs).toTensor().squeeze(2);
   auto nextValuesOld = valuesOld.index({Slice(), Slice(1,None)});
   nextValuesOld = F::pad(nextValuesOld, { {0, 1} });
@@ -28,7 +31,6 @@ Policy ActorCritic::improve(Batch& batch) {
   criticOptimizer->step();
 
   //calculate advantage
-  inputs[0] = batch.observations;
   auto obsValues = critic.forward(inputs).toTensor().squeeze(2);
   auto nextsValues = obsValues.index({Slice(), Slice(1, None)});
   nextsValues = F::pad(nextsValues, { {0, 1} });
