@@ -16,8 +16,8 @@ public:
 protected:
   int id;
   static int getNextId();
-  std::vector<std::shared_ptr<Action>> actions;
   std::vector<std::shared_ptr<Observation>> observations;
+  std::vector<std::shared_ptr<Action>> actions;
   std::vector<float> rewards;
   Batch batch;
   bool _isObserver = true;
