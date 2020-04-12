@@ -2,20 +2,12 @@
 #include "chipmunk.hpp"
 #include "src/utils.h"
 
-const Action& Controller::act() {
-  return *actions.back();
-}
-
 bool Controller::isObserver() {
   return _isObserver;
 }
 
 int Controller::getNextId() {
   return ++lastId;
-}
-
-void Controller::saveTrajectory() {
-
 }
 
 InputController::InputController(
@@ -29,9 +21,8 @@ InputController::InputController(
 InputController::InputController(
   InputVirtual& device,
   Transform2DComponent& cameraTransform,
-  bool isObserver)
-  : device(device),
-    cameraTransform(cameraTransform) {
+  bool isObserver) :  device(device),
+                      cameraTransform(cameraTransform) {
   _isObserver = isObserver;
   id = getNextId();
 }
@@ -39,8 +30,8 @@ InputController::InputController(
 const Action& InputController::update(Time t, Observation o, int reward) {
   observations.push_back(std::make_shared<Observation>(o));
   rewards.push_back(reward);
-  if (o.terminal) {
-    saveTrajectory();
+  if (o.terminal && _isObserver) {
+    batch.addTrajectory(observations, actions, rewards);
   }
   return update(t);
 }
@@ -56,20 +47,14 @@ const Action& InputController::update(Time t) {
 }
 
 const Action& RLController::update(Time time, Observation o, int reward) {
-  observations.push_back(std::make_shared<Observation>(std::move(o)));
   rewards.push_back(reward);
-  if (!trajectory.empty()) {
-    trajectory.back().next = o;
-    trajectory.back().reward = reward;
-  }
   auto a = std::make_shared<Action>(std::move(policy.act(o)));
   if (o.terminal) {
-    saveTrajectory();
-    auto data = std::vector<Trajectory>{trajectory};
-    trainer.improve(data);
+    batch.addTrajectory(observations, actions, rewards);
+    trainer.improve(batch);
   } else {
+    observations.push_back(std::make_shared<Observation>(std::move(o)));
     actions.push_back(a);
-    trajectory.push_back({ .observation = o, .action = *a });
   }
 
   return *a;

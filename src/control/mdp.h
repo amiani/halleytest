@@ -34,11 +34,15 @@ struct Action {
   torch::Tensor logProb;
 };
 
-struct Transition {
-  Observation observation;
-  Action action;
-  float reward;
-  Observation next;
+class Batch {
+public:
+  torch::Tensor observations;
+  //torch::Tensor actions;
+  torch::Tensor actionLogProbs;
+  torch::Tensor rewards;
+  void addTrajectory(std::vector<std::shared_ptr<Observation>>&,
+                    std::vector<std::shared_ptr<Action>>&,
+                    std::vector<float>&);
+private:
+    static void padAndStack(torch::Tensor& batchTensor, torch::Tensor& newTensor, int dims);
 };
-
-typedef std::vector<Transition> Trajectory;

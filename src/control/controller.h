@@ -9,7 +9,6 @@
 
 class Controller {
 public:
-  const Action& act();
   virtual const Action& update(Time t, Observation o, int reward) = 0;
   virtual const Action& update(Time t) = 0;
   bool isObserver();
@@ -17,11 +16,10 @@ public:
 protected:
   int id;
   static int getNextId();
-  void saveTrajectory();
   std::vector<std::shared_ptr<Action>> actions;
   std::vector<std::shared_ptr<Observation>> observations;
   std::vector<float> rewards;
-  std::vector<Transition> trajectory;
+  Batch batch;
   bool _isObserver = true;
 
 private:

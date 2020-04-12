@@ -1,4 +1,6 @@
 #include "trainer.h"
+#include "torch/nn/functional.h"
+namespace F = torch::nn::functional;
 
 ActorCritic::ActorCritic(String actorPath, String criticPath)
   : actor(torch::jit::load(actorPath)),
@@ -10,37 +12,39 @@ ActorCritic::ActorCritic(String actorPath, String criticPath)
   criticOptimizer = std::make_unique<torch::optim::Adam>(criticParameters, torch::optim::AdamOptions(.001));
 }
 
-Policy ActorCritic::improve(std::vector<std::vector<Transition>>& trajectories) {
+using namespace torch::indexing;
+Policy ActorCritic::improve(Batch& batch) {
   //calculate targets for critic update
-  auto [obs, actionLogProbs, rewards, nexts] = trajectoriesToTensors(trajectories);
-  auto inputs = std::vector<torch::jit::IValue>{nexts};
-  auto nextValuesOld = critic.forward(inputs).toTensor().detach();
-  inputs[0] = obs;
-  auto predictions = critic.forward(inputs).toTensor();
-  auto targets = rewards.add(nextValuesOld);
+  auto inputs = std::vector<torch::jit::IValue>{batch.observations};
+  auto valuesOld = critic.forward(inputs).toTensor().squeeze(2);
+  auto nextValuesOld = valuesOld.index({Slice(), Slice(1,None)});
+  nextValuesOld = F::pad(nextValuesOld, { {0, 1} });
+  auto targets = batch.rewards.add(nextValuesOld).detach();
 
   //update critic with MSE loss
   criticOptimizer->zero_grad();
-  auto loss = torch::mse_loss(predictions, targets);
+  auto loss = torch::mse_loss(valuesOld, targets);
   loss.backward();
   criticOptimizer->step();
 
   //calculate advantage
-  inputs[0] = obs;
-  auto obsValues = critic.forward(inputs).toTensor();
-  inputs[0] = nexts;
-  auto nextsValues = critic.forward(inputs).toTensor();
-  auto advantages = rewards.add(nextsValues).sub(obsValues);
+  inputs[0] = batch.observations;
+  auto obsValues = critic.forward(inputs).toTensor().squeeze(2);
+  auto nextsValues = obsValues.index({Slice(), Slice(1, None)});
+  nextsValues = F::pad(nextsValues, { {0, 1} });
+  auto advantages = batch.rewards.add(nextsValues).sub(obsValues);
 
   //use pseudo-loss with advantages
-  auto pseudoLoss = actionLogProbs.mul(advantages).sum(); //TODO: Use the mean across trajectories when using more than one trajectory!!!
+  auto pseudoLoss = batch.actionLogProbs.mul(advantages).sum(); //TODO: Use the mean across trajectories when using more than one trajectory!!!
 
   //update parameters with gradient of pseudo-loss
   actorOptimizer->zero_grad();
   pseudoLoss.backward();
   actorOptimizer->step();
+  return actor;
 }
 
+/*
 std::tuple<Tensor, Tensor, Tensor, Tensor> ActorCritic::trajectoriesToTensors(std::vector<Trajectory>& trajectories) {
   std::vector<Tensor> obs;
   std::vector<Tensor> nexts;
@@ -64,3 +68,4 @@ std::tuple<Tensor, Tensor, Tensor, Tensor> ActorCritic::trajectoriesToTensors(st
     torch::stack(nexts)
   };
 }
+*/

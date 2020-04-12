@@ -9,16 +9,15 @@ using namespace torch;
 
 class Trainer {
 public:
-  virtual Policy improve(std::vector<std::vector<Transition>>&) =0;
+  virtual Policy improve(Batch&) =0;
 };
 
 class ActorCritic : public Trainer {
 public:
   ActorCritic(String, String);
-  Policy improve(std::vector<std::vector<Transition>>&) override;
+  Policy improve(Batch&) override;
 
 private:
-  std::tuple<Tensor, Tensor, Tensor, Tensor> trajectoriesToTensors(std::vector<Trajectory>&);
   jit::Module actor;
   jit::Module critic;
   std::vector<Tensor> actorParameters;
