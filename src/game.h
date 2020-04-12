@@ -1,6 +1,7 @@
 #pragma once
 
 #include <halley.hpp>
+#include "services/controller_service.h"
 #include "services/input_service.h"
 
 using namespace Halley;
@@ -15,6 +16,8 @@ public:
 	String getDataPath() const override;
 	bool isDevMode() const override;
 	std::unique_ptr<Stage> startGame(const HalleyAPI* api) override;
+  
+  int getTargetFPS() const override { return fps; };
 
 	std::shared_ptr<InputService> getInputService() const;
 	std::shared_ptr<ControllerService> getControllerService() const;
@@ -25,6 +28,7 @@ public:
 private:
 	const HalleyAPI* api = nullptr;
 	float zoom = 1;
+	int fps = 60;
 	
 	std::shared_ptr<InputService> inputService;
 	std::shared_ptr<ControllerService> controllerService;

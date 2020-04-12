@@ -10,16 +10,20 @@ void initSDLAudioPlugin(IPluginRegistry &registry);
 void initSDLInputPlugin(IPluginRegistry &registry);
 void initAsioPlugin(IPluginRegistry &registry);
 
-void HalleyTestGame::init(const Environment& env, const Vector<String>& args)
-{
+void HalleyTestGame::init(const Environment& env, const Vector<String>& args) {
+  if (!args.empty()) {
+    fps = std::stoi(args[0]);
+  }
 }
 
 int HalleyTestGame::initPlugins(IPluginRegistry& registry)
 {
-	initOpenGLPlugin(registry);
+  if (fps > 0) {
+    initOpenGLPlugin(registry);
+    initSDLAudioPlugin(registry);
+    initSDLInputPlugin(registry);
+  }
 	initSDLSystemPlugin(registry, {});
-	initSDLAudioPlugin(registry);
-	initSDLInputPlugin(registry);
 
 #ifdef WITH_ASIO
 	initAsioPlugin(registry);
@@ -80,6 +84,7 @@ std::unique_ptr<Stage> HalleyTestGame::startGame(const HalleyAPI* api)
 	api->audio->setListener(AudioListenerData(Vector3f(192, 108, -20), 200));
 
 	inputService = std::make_shared<InputService>(*api->input);
+	controllerService = std::make_shared<ControllerService>();
 
 	return std::make_unique<GameStage>();
 }
@@ -87,6 +92,10 @@ std::unique_ptr<Stage> HalleyTestGame::startGame(const HalleyAPI* api)
 std::shared_ptr<InputService> HalleyTestGame::getInputService() const
 {
 	return inputService;
+}
+
+std::shared_ptr<ControllerService> HalleyTestGame::getControllerService() const {
+  return controllerService;
 }
 
 float HalleyTestGame::getZoom() const
