@@ -2,7 +2,7 @@
 #include "distributions/normal.h"
 #include "distributions/bernoulli.h"
 
-Policy::Policy(String path) {
+Policy::Policy(String& path) {
   module = torch::jit::load(path);
   //module.to(at::kCUDA);
 }
@@ -11,7 +11,6 @@ Policy::Policy(torch::jit::script::Module module) : module(module) {}
 
 Action Policy::act(Observation& o) {
   auto input = o.toTensor();
-  //std::cout << "act: " << input << std::endl;
   auto inputs = std::vector<torch::jit::IValue>{input};
   torch::Tensor output = module.forward(inputs).toTensor();
   auto throttleProb = output.narrow(0, 0, 1);
@@ -27,11 +26,12 @@ Action Policy::act(Observation& o) {
   auto logProb = throttleBern.log_prob(throttleSample)
     .add(fireBern.log_prob(fireSample))
     .add(targetNormal.log_prob(targetSample).sum());  //TODO: can I just sum the log_prob vector here???
-  auto targetData = targetSample.data<float>();
+  auto targetAcc = targetSample.accessor<float, 1>();
+  auto target = cp::Vect(targetAcc[0]*1920/2, targetAcc[1]*1080/2) + o.self.position;
   return {
-    .throttle = throttleSample.item<bool>(),
-    .fire = fireSample.item<bool>(),
-    .target = cp::Vect(targetData[0], targetData[1]),
-    .logProb = logProb
+    throttleSample.item<bool>(),
+    fireSample.item<bool>(),
+    target,
+    logProb
   };
 }
