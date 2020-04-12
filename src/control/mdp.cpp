@@ -53,30 +53,31 @@ void Batch::addTrajectory(std::vector<std::shared_ptr<Observation>>& obs,
     logProbsVec.push_back(acts[i]->logProb);
   }
   auto obsTensor = torch::stack(obsVec);
-  auto logProbsTensor = torch::stack(logProbsVec);
+  auto logProbsTensor = torch::cat(logProbsVec);
   auto rewsTensor = torch::from_blob(rews.data(), {size});
 
   if (observations.defined()) {
     padAndStack(observations, obsTensor, 3);
   } else {
-    observations = obsTensor.reshape({1, -1, 6*31});
+    observations = obsTensor.unsqueeze(0);
   }
 
   if (actionLogProbs.defined()) {
     padAndStack(actionLogProbs, logProbsTensor, 2);
   } else {
-    actionLogProbs = logProbsTensor.reshape({1, -1});
+    actionLogProbs = logProbsTensor.unsqueeze(0);
   }
 
   if (rewards.defined()) {
     padAndStack(rewards, rewsTensor, 2);
   } else {
-    rewards = rewsTensor.reshape({1, -1});
+    rewards = rewsTensor.unsqueeze(0);
   }
-  std::cout << observations.sizes() << " " << actionLogProbs.sizes() << " " << rewards.sizes() << std::endl;
+  numTrajectories++;
 }
 
 void Batch::padAndStack(torch::Tensor &batchTensor, torch::Tensor &newTensor, int dims) {
+  newTensor = newTensor.unsqueeze(0);
   auto padding = newTensor.size(1) - batchTensor.size(1);
   std::vector<int64_t> pad = {0, 0, 0, abs(padding)};
   if (dims == 3) {
@@ -88,5 +89,5 @@ void Batch::padAndStack(torch::Tensor &batchTensor, torch::Tensor &newTensor, in
   } else {
     newTensor = F::pad(newTensor, pad);
   }
-  batchTensor = torch::stack({batchTensor, newTensor});
+  batchTensor = torch::cat({batchTensor, newTensor});
 }
