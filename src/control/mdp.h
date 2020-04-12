@@ -43,6 +43,8 @@ public:
   void addTrajectory(std::vector<std::shared_ptr<Observation>>&,
                     std::vector<std::shared_ptr<Action>>&,
                     std::vector<float>&);
+  int getNumTrajectories() { return numTrajectories; }
 private:
+    int numTrajectories = 0;
     static void padAndStack(torch::Tensor& batchTensor, torch::Tensor& newTensor, int dims);
 };
