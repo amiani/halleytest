@@ -17,6 +17,12 @@ ActorCritic::ActorCritic(String actorPath, String criticPath)
 }
 
 Policy ActorCritic::improve(Batch& batch) {
+  auto observations = batch.observations.to(DEVICE);
+  auto rewards = batch.rewards.to(DEVICE);
+  auto actionLogProbs = batch.actionLogProbs.to(DEVICE);
+  criticOptimizer->zero_grad();
+  actorOptimizer->zero_grad();
+
   //calculate targets for critic update
   auto inputs = std::vector<torch::jit::IValue>{batch.observations.to(DEVICE)};
   auto valuesOld = critic.forward(inputs).toTensor().squeeze(2);
