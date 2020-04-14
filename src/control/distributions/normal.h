@@ -9,13 +9,14 @@ class Normal : public Distribution
 {
   private:
     torch::Tensor loc, scale;
+    int n;
 
   public:
     Normal(const torch::Tensor loc, const torch::Tensor scale);
 
     torch::Tensor entropy();
     torch::Tensor log_prob(torch::Tensor value);
-    torch::Tensor sample(c10::ArrayRef<int64_t> sample_shape = {});
+    torch::Tensor sample();
 
     inline torch::Tensor get_loc() { return loc; }
     inline torch::Tensor get_scale() { return scale; }

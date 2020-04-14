@@ -15,7 +15,7 @@ class Bernoulli : public Distribution
 
     torch::Tensor entropy();
     torch::Tensor log_prob(torch::Tensor value);
-    torch::Tensor sample(c10::ArrayRef<int64_t> sample_shape = {});
+    torch::Tensor sample();
 
     inline torch::Tensor get_logits() { return logits; }
     inline torch::Tensor get_probs() { return probs; }
