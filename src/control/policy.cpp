@@ -22,7 +22,7 @@ Action Policy::act(Observation& o) {
   auto scale = output.narrow(0, 4, 2);
   auto throttleBern = Bernoulli(nullptr, &throttleProb);
   auto fireBern = Bernoulli(nullptr, &fireProb);
-  auto targetNormal = Normal(torch::zeros({2}).to(DEVICE), torch::eye(2).to(DEVICE));
+  Normal targetNormal(torch::zeros({2}).to(DEVICE), torch::eye(2).to(DEVICE));
   auto throttleSample = throttleBern.sample();
   auto fireSample = fireBern.sample();
   auto targetSample = loc + scale * targetNormal.sample().to(DEVICE);
