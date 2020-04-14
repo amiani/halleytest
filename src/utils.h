@@ -9,7 +9,8 @@ cp::Vect screenToChip(Halley::Vector2f, cp::Vect);
 Halley::Vector2f chipToHalley(const cp::Vect&);
 cp::Vect halleyToChip(const Halley::Vector2f);
 
-const torch::Device DEVICE(torch::kCPU);
+const torch::Device DEVICE(torch::kCUDA);
+bool isAnyNAN(torch::Tensor&);
 
 enum BodyType {
   PLAYERSHIPBODY,
