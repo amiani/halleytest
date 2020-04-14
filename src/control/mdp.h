@@ -7,7 +7,7 @@ using namespace Halley;
 
 struct EntityData {
   cp::Vect position;
-  double rotation;
+  float rotation;
   cp::Vect velocity;
   float health;
   std::array<float, 6> toBlob();

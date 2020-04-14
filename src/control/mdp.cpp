@@ -38,6 +38,7 @@ torch::Tensor Observation::toTensor() {
 
 #include "torch/nn/functional.h"
 namespace F = torch::nn::functional;
+
 void Batch::addTrajectory(std::vector<std::shared_ptr<Observation>>& obs,
                           std::vector<std::shared_ptr<Action>>& acts,
                           std::vector<float>& rews) {
