@@ -17,6 +17,7 @@ ActorCritic::ActorCritic(String actorPath, String criticPath)
 }
 
 Policy ActorCritic::improve(Batch& batch) {
+  const float GAMMA = .99;
   auto observations = batch.observations.to(DEVICE);
   auto rewards = batch.rewards.to(DEVICE);
   auto actionLogProbs = batch.actionLogProbs.to(DEVICE);
@@ -28,11 +29,10 @@ Policy ActorCritic::improve(Batch& batch) {
   auto valuesOld = critic.forward(inputs).toTensor().squeeze(2);
   auto nextValuesOld = valuesOld.index({Slice(), Slice(1,None)});
   nextValuesOld = F::pad(nextValuesOld, { {0, 1} });
-  auto targets = rewards.add(nextValuesOld).detach();
+  auto targets = rewards.add(GAMMA*nextValuesOld).detach();
 
   //update critic with MSE loss
   auto loss = torch::mse_loss(valuesOld, targets);
-  std::cout << "critic loss: " << loss << std::endl;
   loss.backward();
   criticOptimizer->step();
 
@@ -40,14 +40,15 @@ Policy ActorCritic::improve(Batch& batch) {
   auto obsValues = critic.forward(inputs).toTensor().squeeze(2);
   auto nextsValues = obsValues.index({Slice(), Slice(1, None)});
   nextsValues = F::pad(nextsValues, { {0, 1} });
-  const float GAMMA = .99;
   auto advantages = rewards.add(GAMMA*nextsValues).sub(obsValues);
 
   //use pseudo-loss with advantages
-  auto pseudoLoss = actionLogProbs.mul(advantages).sum(); //TODO: Use the mean across trajectories when using more than one trajectory!!!
+  auto pseudoLoss = -actionLogProbs.mul(advantages).sum({1}).mean({0});
 
   //update parameters with gradient of pseudo-loss
   pseudoLoss.backward();
   actorOptimizer->step();
+
+  std::cout << "critic loss: " << loss.item<float>() << ", pseudo loss: " << pseudoLoss.item<float>() << std::endl;
   return actor;
 }
