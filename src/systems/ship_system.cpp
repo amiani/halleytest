@@ -21,9 +21,10 @@ using namespace Halley;
 class ShipSystem final : public ShipSystemBase<ShipSystem> {
 public:
   void init(){
-    spawnPlayerShip(shipService->getShip("large_grey"));
-
-    spawnGoal();
+    auto goal = spawnGoal();
+    auto goalPosition = goal.getComponent<BodyComponent>().body->getPosition();
+    auto player = spawnPlayerShip(shipService->getShip("large_grey"));
+    player.addComponent(GoalComponent(goalPosition));
   }
 
   void update(Time t) {}
@@ -83,7 +84,7 @@ public:
     return ship;
   }
 
-  void spawnGoal() {
+  EntityRef spawnGoal() {
     auto position = cp::Vect(200, 200);
     auto body = std::make_shared<cp::Body>(1, 1);
     body->setPosition(position);
@@ -98,7 +99,7 @@ public:
       .setImage(getResources(), "target.png")
       .setPivot(Halley::Vector2f(.5, .5))
       .scaleTo(Halley::Vector2f(100, 100));
-    getWorld().createEntity("goal")
+    return getWorld().createEntity("goal")
       .addComponent(BodyComponent(body))
       .addComponent(Transform2DComponent())
       .addComponent(ShapeComponent(shape))

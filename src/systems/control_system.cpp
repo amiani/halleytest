@@ -6,7 +6,7 @@ class ControlSystem final : public ControlSystemBase<ControlSystem> {
 public:
   void update(Halley::Time time, MainFamily& e) {
     if (frames % 8 == 0) {
-      if (frames >= 100) terminal = true;
+      if (frames >= 500) terminal = true;
       if (terminal) {
         updateController(time, e, true);
         getAPI().core->setStage(std::make_unique<GameStage>());
@@ -48,7 +48,9 @@ public:
     auto body = e.body.body;
     if (e.observer.hasValue()) {
       auto observation = makeObservation(e, isTerminal);
-      float reward = e.observer->reward;
+      auto distanceToGoal = cp::Vect::dist(body->getPosition(), e.goal.position);
+      auto distanceReward = - (10.f / 2200) * distanceToGoal;
+      auto reward = e.observer->reward + distanceReward - 1;
       e.observer->reward = 0;
       return e.shipControl.controller->update(time, observation, reward);
     } else {
