@@ -9,13 +9,13 @@ using namespace torch;
 
 class Trainer {
 public:
-  virtual Policy improve(Batch&) =0;
+  virtual Policy improve(const Batch&) =0;
 };
 
 class ActorCritic : public Trainer {
 public:
   ActorCritic(String, String);
-  Policy improve(Batch&) override;
+  Policy improve(const Batch&) override;
 
 private:
   jit::Module actor;
@@ -24,4 +24,7 @@ private:
   std::vector<Tensor> criticParameters;
   std::unique_ptr<torch::optim::Optimizer> actorOptimizer;
   std::unique_ptr<torch::optim::Optimizer> criticOptimizer;
+  const float GAMMA = .99;
+
+  Tensor updateTarget(Tensor& obsValue, Tensor& reward);
 };
