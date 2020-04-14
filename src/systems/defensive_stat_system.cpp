@@ -7,7 +7,6 @@ public:
 
   void onMessageReceived(const HitMessage& msg, MainFamily& e) {
     e.health.health -= msg.damage;
-    std::cout << "health: " << e.health.health << std::endl;
     if (e.health.health <= 0) {
       getWorld().destroyEntity(e.entityId);
     }
