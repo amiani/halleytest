@@ -1,9 +1,3 @@
-type:
-  name: cp::Vect
-  include: "chipmunk.hpp"
-
----
-
 component:
   name: SpritePositionOverride
   members:

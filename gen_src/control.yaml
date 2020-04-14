@@ -4,6 +4,12 @@ type:
 
 ---
 
+type:
+  name: cp::Vect
+  include: "chipmunk.hpp"
+
+---
+
 component:
   name: ShipControl
   members:
@@ -20,6 +26,13 @@ component:
 
 component:
   name: WeaponControl
+
+---
+
+component:
+  name: Goal
+  members:
+    - position: cp::Vect
 
 ---
 
@@ -44,6 +57,7 @@ system:
     - Observer: optional write
     - Detector: read
     - Health: read
+    - Goal: read
   strategy: individual
   services:
     - ControllerService
