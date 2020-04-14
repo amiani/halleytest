@@ -5,7 +5,7 @@
 
 class Policy {
 public:
-  Policy(String& path);
+  Policy(String path);
   Policy(torch::jit::script::Module module);
   Action act(Observation& o);
 

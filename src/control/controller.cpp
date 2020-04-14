@@ -47,6 +47,8 @@ const Action& InputController::update(Time t) {
   return *a;
 }
 
+RLController::RLController(String actorPath, String criticPath) : policy(actorPath), trainer(actorPath, criticPath) {}
+
 auto start = std::chrono::high_resolution_clock::now();
 const Action& RLController::update(Time time, Observation o, int reward) {
   rewards.push_back(reward);

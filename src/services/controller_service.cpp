@@ -1,6 +1,8 @@
 #include "controller_service.h"
 #include "src/control/controller.h"
 
+ControllerService::ControllerService(String actorPath, String criticPath) : actorPath(actorPath), criticPath(criticPath) {}
+
 std::shared_ptr<InputController> ControllerService::makeInputController(
   InputVirtual& device,
   Transform2DComponent& cameraTransform) {
@@ -10,7 +12,7 @@ std::shared_ptr<InputController> ControllerService::makeInputController(
 }
 
 std::shared_ptr<RLController> ControllerService::makeRLController() {
-  auto c = std::make_shared<RLController>();
+  auto c = std::make_shared<RLController>(actorPath, criticPath);
   rlControllers.push_back(c);
   return c;
 }

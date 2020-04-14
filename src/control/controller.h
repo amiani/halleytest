@@ -40,10 +40,11 @@ private:
 
 class RLController : public Controller {
 public:
-  const Action& update(Halley::Time t, Observation o, int reward) override;
+  RLController(String actorPath, String criticPath);
+  const Action& update(Halley::Time t, Observation o, float reward) override;
   const Action& update(Halley::Time t) override;
 
 private:
-  Policy policy = Policy("src/control/actor.pt");
-  ActorCritic trainer = ActorCritic("src/control/actor.pt", "src/control/critic.pt");
+  Policy policy;
+  ActorCritic trainer;
 };

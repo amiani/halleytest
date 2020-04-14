@@ -29,6 +29,8 @@ private:
 	const HalleyAPI* api = nullptr;
 	float zoom = 1;
 	int fps = 60;
+	String actorPath;
+	String criticPath;
 	
 	std::shared_ptr<InputService> inputService;
 	std::shared_ptr<ControllerService> controllerService;

@@ -13,6 +13,8 @@ void initAsioPlugin(IPluginRegistry &registry);
 void HalleyTestGame::init(const Environment& env, const Vector<String>& args) {
   if (!args.empty()) {
     fps = std::stoi(args[0]);
+    actorPath = args[1];
+    criticPath = args[2];
   }
 }
 
@@ -84,7 +86,7 @@ std::unique_ptr<Stage> HalleyTestGame::startGame(const HalleyAPI* api)
 	api->audio->setListener(AudioListenerData(Vector3f(192, 108, -20), 200));
 
 	inputService = std::make_shared<InputService>(*api->input);
-	controllerService = std::make_shared<ControllerService>();
+	controllerService = std::make_shared<ControllerService>(actorPath, criticPath);
 
 	return std::make_unique<GameStage>();
 }

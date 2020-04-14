@@ -8,6 +8,7 @@ using namespace Halley;
 
 class ControllerService : public Service {
 public:
+  ControllerService(String, String);
   std::shared_ptr<InputController> makeInputController(InputVirtual& device, Transform2DComponent& cameraTransform);
   std::shared_ptr<RLController> makeRLController();
   std::shared_ptr<RLController> getRLController();
@@ -16,4 +17,5 @@ public:
 private:
   std::vector<std::shared_ptr<Controller>> controllers;
   std::vector<std::shared_ptr<RLController>> rlControllers;
+  String actorPath, criticPath;
 };
