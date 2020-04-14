@@ -1,4 +1,3 @@
-#include <host_defines.h>
 #include "cuda.h"
 #include "src/utils.h"
 #include "policy.h"
@@ -9,7 +8,7 @@ Policy::Policy(String path) : module(torch::jit::load(path)) {
   module.to(DEVICE);
 }
 
-Policy::Policy(torch::jit::script::Module module) : module(module) {
+Policy::Policy(torch::jit::script::Module m) : module(m) {
   module.to(DEVICE);
 }
 
@@ -19,19 +18,19 @@ Action Policy::act(Observation& o) {
   torch::Tensor output = module.forward(inputs).toTensor();
   auto throttleProb = output.narrow(0, 0, 1);
   auto fireProb = output.narrow(0, 1, 1);
-  auto loc = output.narrow(0, 2, 2);  //TODO: do loc and scale have to be transformed somehow?
+  auto loc = output.narrow(0, 2, 2);
   auto scale = output.narrow(0, 4, 2);
   auto throttleBern = Bernoulli(nullptr, &throttleProb);
   auto fireBern = Bernoulli(nullptr, &fireProb);
-  auto targetNormal = Normal(loc, scale);
+  auto targetNormal = Normal(torch::zeros({2}).to(DEVICE), torch::eye(2).to(DEVICE));
   auto throttleSample = throttleBern.sample();
   auto fireSample = fireBern.sample();
-  auto targetSample = targetNormal.sample();
-  auto logProb = throttleBern.log_prob(throttleSample)
-    .add(fireBern.log_prob(fireSample))
-    .add(targetNormal.log_prob(targetSample).sum());  //TODO: can I just sum the log_prob vector here???
-  //auto targetAcc = targetSample.packed_accessor32<float, 1>();
-  auto target = cp::Vect(targetSample[0].item<float>()*1920/2, targetSample[1].item<float>()*1080/2) + o.self.position;
+  auto targetSample = loc + scale * targetNormal.sample().to(DEVICE);
+  auto throttleLogProb = throttleBern.log_prob(throttleSample);
+  auto fireLogProb = fireBern.log_prob(fireSample);
+  auto targetLogProb = targetNormal.log_prob((targetSample - loc)/scale).squeeze(0);
+  auto logProb = throttleLogProb.add(fireLogProb).add(targetLogProb);
+  auto target = cp::Vect(targetSample[0].item<float>(), targetSample[1].item<float>()) + o.self.position;
   return {
     throttleSample.item<bool>(),
     fireSample.item<bool>(),
