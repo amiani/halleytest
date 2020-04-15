@@ -80,10 +80,9 @@ void Batch::addTrajectory(std::vector<std::shared_ptr<Observation>>& obs,
 void Batch::padAndStack(torch::Tensor &batchTensor, torch::Tensor &newTensor, int dims) {
   newTensor = newTensor.unsqueeze(0);
   auto padding = newTensor.size(1) - batchTensor.size(1);
-  std::vector<int64_t> pad = {0, 0, 0, abs(padding)};
+  std::vector<int64_t> pad = {0, abs(padding)};
   if (dims == 3) {
-    pad.push_back(0);
-    pad.push_back(0);
+    pad.insert(pad.begin(), {0, 0});
   }
   if (padding > 0) {
     batchTensor = F::pad(batchTensor, pad);
