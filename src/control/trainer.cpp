@@ -39,12 +39,12 @@ Policy ActorCritic::improve(const Batch& batch) {
 
 
   //calculate advantage
-  auto nextsValues = obsValue.index({Slice(), Slice(1, None)});
-  nextsValues = F::pad(nextsValues, { {0, 1} });
-  auto advantages = reward.add(GAMMA*nextsValues).sub(obsValue);
+  auto nextsValue = obsValue.index({Slice(), Slice(1, None)});
+  nextsValue = F::pad(nextsValue, { {0, 1} });
+  auto advantage = reward.add(GAMMA*nextsValue).sub(obsValue);
 
   //use pseudo-loss with advantages
-  auto pseudoLoss = -actionLogProbs.mul(advantages).sum({1}).mean({0});
+  auto pseudoLoss = -actionLogProbs.mul(advantage).sum({1}).mean({0});
 
   //update parameters with gradient of pseudo-loss
   actorOptimizer->zero_grad();
@@ -59,9 +59,10 @@ Policy ActorCritic::improve(const Batch& batch) {
     maxReturn = meanReturn;
   }
   actor.save("latestactor.pt");
+  critic.save("latestcritic.pt");
 
   std::cout << "final critic loss: " << loss.item<float>() << ", pseudo loss: " << pseudoLoss.item<float>() << std::endl;
-  std::cout << "\naverage return: " << reward.sum({1}).mean({0}).item<float>() << std::endl;
+  std::cout << "average return: " << reward.sum({1}).mean({0}).item<float>() << std::endl;
   return actor;
 }
 
