@@ -52,7 +52,7 @@ RLController::RLController(String actorPath, String criticPath) : policy(actorPa
 auto start = std::chrono::high_resolution_clock::now();
 const Action& RLController::update(Time time, Observation o, float reward) {
   rewards.push_back(reward);
-  auto a = std::make_shared<Action>(std::move(policy.act(o)));
+  auto a = std::make_shared<Action>(policy.act(o));
   if (o.terminal) {
     batch.addTrajectory(observations, actions, rewards);
     observations.clear();
@@ -65,7 +65,7 @@ const Action& RLController::update(Time time, Observation o, float reward) {
      */
     start = std::chrono::high_resolution_clock::now();
     if (batch.getNumTrajectories() > 40) {
-      std::cout << "~~~~GOT BATCH~~~~\n";
+      std::cout << "\n~~~~GOT BATCH~~~~\n";
       policy = trainer.improve(batch);
       batch = Batch();
     }
