@@ -63,7 +63,7 @@ public:
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape))
       .addComponent(DetectorComponent(detector, std::vector<Entity*>()))
-      .addComponent(ObserverComponent())
+      .addComponent(ObserverComponent(0))
       .addComponent(HealthComponent(100))
       .addComponent(SpriteComponent(sprite, 0, 1))
       .addComponent(HardpointsComponent(std::vector<Hardpoint>{h}))
