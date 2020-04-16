@@ -4,20 +4,24 @@
 #include <torch/torch.h>
 
 #include "distribution.h"
+using namespace torch;
 
 class Normal : public Distribution
 {
   private:
-    torch::Tensor loc, scale;
+    Tensor loc, scale;
     int n;
 
   public:
-    Normal(const torch::Tensor loc, const torch::Tensor scale);
+    Normal(const Tensor loc, const Tensor scale);
 
-    torch::Tensor entropy();
-    torch::Tensor log_prob(torch::Tensor value);
-    torch::Tensor sample();
+    Tensor entropy();
+    Tensor log_prob(torch::Tensor value);
+    Tensor sample();
+    Tensor rsample();
 
-    inline torch::Tensor get_loc() { return loc; }
-    inline torch::Tensor get_scale() { return scale; }
+    inline Tensor get_loc() { return loc; }
+    inline Tensor get_scale() { return scale; }
+
+    static Normal StandardNormal;
 };

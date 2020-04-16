@@ -1,8 +1,6 @@
-#define _USE_MATH_DEFINES
 #include <math.h>
 #include <cmath>
 #include <limits>
-
 #include <c10/util/ArrayRef.h>
 #include <torch/torch.h>
 
@@ -15,18 +13,16 @@ torch::Tensor Normal::entropy() {
 }
 
 torch::Tensor Normal::log_prob(torch::Tensor value) {
-  auto varInv = scale.pow(2).inverse();
-  auto xminusmu = value - loc;
-  auto xmuT = xminusmu.unsqueeze(0);
-  /*
-  std::cout << "varInv: " << varInv << "\nxminusmu: " << xminusmu << "\nxmuT" << xmuT << std::endl;
-  std::cout << xmuT.mm(varInv).mm(xminusmu.unsqueeze(1));
-  std::cout << "scaledetsqrt: " << scale.det().sqrt().log() << std::endl;
-   */
-  return -std::log(std::pow(2*M_PI, n/2)) - scale.det().sqrt().log()
-      - .5 * xmuT.mm(varInv).mm(xminusmu.unsqueeze(1));
+  auto var = scale.pow(2);
+  return -(value - loc).pow(2) / (2*var) - scale.log() - std::log(std::sqrt(2*M_PI));
 }
 
 torch::Tensor Normal::sample() {
+  torch::NoGradGuard no_grad_guard;
   return at::normal(loc, scale).diag(0);
+}
+
+Tensor Normal::rsample() {
+  auto eps = at::normal(0, 1, {1}).to(torch::kCUDA);
+  return loc + scale * eps;
 }
