@@ -22,6 +22,14 @@ Policy ActorCritic::improve(const Batch& batch) {
   auto reward = batch.rewards.to(DEVICE);
   auto actionLogProbs = batch.actionLogProbs.to(DEVICE);
 
+  float meanReturn = reward.sum({1}).mean({0}).item<float>();
+  if (meanReturn > maxReturn) {
+    std::cout << "got new best model\n";
+    actor.save("bestactor.pt");
+    critic.save("bestcritic.pt");
+    maxReturn = meanReturn;
+  }
+
   auto inputs = std::vector<torch::jit::IValue>{observation};
   //calculate targets for critic update
   Tensor loss;
@@ -51,13 +59,6 @@ Policy ActorCritic::improve(const Batch& batch) {
   pseudoLoss.backward();
   actorOptimizer->step();
 
-  float meanReturn = reward.sum({1}).mean({0}).item<float>();
-  if (meanReturn > maxReturn) {
-    std::cout << "got new best model\n";
-    actor.save("bestactor.pt");
-    critic.save("bestcritic.pt");
-    maxReturn = meanReturn;
-  }
   actor.save("latestactor.pt");
   critic.save("latestcritic.pt");
 
