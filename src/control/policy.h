@@ -2,6 +2,8 @@
 
 #include "mdp.h"
 #include "torch/script.h"
+#include "distributions/normal.h"
+#include "src/utils.h"
 
 class Policy {
 public:
@@ -11,4 +13,5 @@ public:
 
 private:
   torch::jit::script::Module module;
+  Normal standardNormal = Normal(torch::zeros({1}).to(DEVICE), torch::eye(1).to(DEVICE));
 };

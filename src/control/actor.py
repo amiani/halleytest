@@ -1,6 +1,6 @@
 import torch
 
-N, D_o, H1, H2, H3, D_a = 1, 6*31, 100, 50, 100, 4
+N, D_o, H1, H2, H3, D_a = 1, 6*31, 100, 50, 100, 3
 
 o = torch.randn(D_o)
 
