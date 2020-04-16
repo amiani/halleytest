@@ -10,6 +10,14 @@ class AsteroidSystem final : public AsteroidSystemBase<AsteroidSystem> {
 public:
   void init() {
     spawnAsteroid(getAsteroidService().any());
+    spawnAsteroid(getAsteroidService().any());
+    spawnAsteroid(getAsteroidService().any());
+    spawnAsteroid(getAsteroidService().any());
+    spawnAsteroid(getAsteroidService().any());
+    spawnAsteroid(getAsteroidService().any());
+    spawnAsteroid(getAsteroidService().any());
+    spawnAsteroid(getAsteroidService().any());
+    spawnAsteroid(getAsteroidService().any());
   }
 
   void update(Halley::Time t) {
@@ -19,7 +27,8 @@ public:
   void spawnAsteroid(const AsteroidConfig& config) {
     cp::Float moment = cp::momentForCircle(config.mass, 0, config.radius);
     auto body = std::make_shared<cp::Body>(config.mass, moment);
-    body->setPosition(cp::Vect(0, 100));
+    auto pos = cp::Vect((rand() % 1500)-750, (rand() % 1500)-750);
+    body->setPosition(pos);
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
     shape->setFilter({
       .categories = ASTEROID,
