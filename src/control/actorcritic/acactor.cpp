@@ -1,17 +1,12 @@
 #include "cuda.h"
 #include "src/utils.h"
-#include "policy.h"
-#include "distributions/bernoulli.h"
+#include "acactor.h"
+#include "src/control/distributions/bernoulli.h"
 
-Policy::Policy(String path) : module(torch::jit::load(path)) {
-  module.to(DEVICE);
-}
+ACActor::ACActor(String path) : Actor(path) {}
+ACActor::ACActor(torch::jit::script::Module module) : Actor(module) {}
 
-Policy::Policy(torch::jit::script::Module m) : module(m) {
-  module.to(DEVICE);
-}
-
-Action Policy::act(Observation& o) {
+Action ACActor::act(const Observation& o) {
   auto input = o.toTensor().to(DEVICE);
   auto inputs = std::vector<torch::jit::IValue>{input};
   torch::Tensor output = module.forward(inputs).toTensor();

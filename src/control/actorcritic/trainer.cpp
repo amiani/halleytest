@@ -12,12 +12,12 @@ ActorCritic::ActorCritic(String actorPath, String criticPath)
   critic.to(DEVICE);
   for (const auto& p : actor.parameters()) { actorParameters.push_back(p); }
   for (const auto& p : critic.parameters()) { criticParameters.push_back(p); }
-  actorOptimizer = std::make_unique<torch::optim::Adam>(actorParameters, torch::optim::AdamOptions(.005));
-  criticOptimizer = std::make_unique<torch::optim::Adam>(criticParameters, torch::optim::AdamOptions(.005));
+  actorOptimizer = std::make_unique<torch::optim::Adam>(actorParameters, torch::optim::AdamOptions(.00001));
+  criticOptimizer = std::make_unique<torch::optim::Adam>(criticParameters, torch::optim::AdamOptions(.00001));
 }
 
 float maxReturn = -1000;
-Policy ActorCritic::improve(const Batch& batch) {
+ACActor ActorCritic::improve(const TrajBatch& batch) {
   auto observation = batch.observations.to(DEVICE);
   auto reward = batch.rewards.to(DEVICE);
   auto actionLogProbs = batch.actionLogProbs.to(DEVICE);

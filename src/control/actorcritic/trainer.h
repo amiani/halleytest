@@ -1,7 +1,7 @@
 #pragma once
 
-#include "policy.h"
-#include "mdp.h"
+#include "acactor.h"
+#include "src/control/mdp.h"
 #include "torch/script.h"
 #include "torch/torch.h"
 
@@ -9,13 +9,13 @@ using namespace torch;
 
 class Trainer {
 public:
-  virtual Policy improve(const Batch&) =0;
+  virtual ACActor improve(const TrajBatch&) =0;
 };
 
 class ActorCritic : public Trainer {
 public:
   ActorCritic(String, String);
-  Policy improve(const Batch&) override;
+  ACActor improve(const TrajBatch&) override;
 
 private:
   jit::Module actor;
