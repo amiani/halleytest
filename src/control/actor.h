@@ -7,7 +7,7 @@
 
 class Actor {
 public:
-  Actor(String path);
+  Actor(::String path);
   Actor(torch::jit::script::Module module);
   virtual Action act(const Observation& o) =0;
 
