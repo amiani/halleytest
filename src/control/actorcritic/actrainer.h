@@ -1,5 +1,6 @@
 #pragma once
 
+#include <src/control/trainer.h>
 #include "acactor.h"
 #include "src/control/mdp.h"
 #include "torch/script.h"
@@ -7,15 +8,10 @@
 
 using namespace torch;
 
-class Trainer {
-public:
-  virtual ACActor improve(const TrajBatch&) =0;
-};
-
 class ActorCritic : public Trainer {
 public:
   ActorCritic(String, String);
-  ACActor improve(const TrajBatch&) override;
+  Actor improve() override;
 
 private:
   jit::Module actor;

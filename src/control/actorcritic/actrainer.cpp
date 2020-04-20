@@ -1,4 +1,4 @@
-#include "trainer.h"
+#include "actrainer.h"
 #include "src/utils.h"
 #include "torch/nn/functional.h"
 namespace F = torch::nn::functional;
@@ -17,7 +17,7 @@ ActorCritic::ActorCritic(String actorPath, String criticPath)
 }
 
 float maxReturn = -1000;
-ACActor ActorCritic::improve(const TrajBatch& batch) {
+Actor ActorCritic::improve(const TrajBatch& batch) {
   auto observation = batch.observations.to(DEVICE);
   auto reward = batch.rewards.to(DEVICE);
   auto actionLogProbs = batch.actionLogProbs.to(DEVICE);
