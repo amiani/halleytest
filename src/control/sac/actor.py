@@ -5,8 +5,6 @@ from torch.distributions.normal import Normal
 def sampleaction(mu, std):
     return Normal(mu, std).rsample()
 
-traced_sampleaction = torch.jit.trace(sampleaction, (torch.rand(1), torch.rand(1)), check_trace=False)
-
 
 class Actor(torch.nn.Module):
     def __init__(self, obdim, h1, h2, actiondim):
@@ -18,23 +16,23 @@ class Actor(torch.nn.Module):
             torch.nn.Linear(h1, h2),
             torch.nn.ReLU(),
         )
-        self.mu_layer = torch.nn.Linear(h2, actiondim)
-        self.log_std_layer = torch.nn.Linear(h2, actiondim)
+        self.mu_head = torch.nn.Linear(h2, actiondim)
+        self.log_std_head = torch.nn.Linear(h2, actiondim)
+        self.sampleaction = torch.jit.trace(sampleaction, (torch.rand(1).to('cuda'), torch.rand(1).to('cuda')), check_trace=False)
 
     def forward(self, obs, deterministic=torch.tensor([False], dtype=torch.bool)):
         net_out = self.net(obs)
-        mu = self.mu_layer(net_out)
-        log_std = self.log_std_layer(net_out)
+        mu = self.mu_head(net_out)
+        log_std = self.log_std_head(net_out)
         std = torch.exp(log_std)
 
         if deterministic:
             return mu
         else:
-            return traced_sampleaction(mu, std)
+            return self.sampleaction(mu, std)
 
 
 N, obdim, h1, h2, actiondim = 1, 6 * 31, 100, 75, 1
-#o = torch.randn(6 * 31)
 module = Actor(obdim, h1, h2, actiondim)
 script_module = torch.jit.script(module)
 script_module.save('actor.pt')
