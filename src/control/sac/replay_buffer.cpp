@@ -2,9 +2,9 @@
 // Created by amiani on 4/20/20.
 //
 
-#include "ReplayBuffer.h"
+#include "replay_buffer.h"
 
-const Batch& ReplayBuffer::sample(int size) {
+Batch ReplayBuffer::sample(int size) {
   std::vector<Tensor> o;
   std::vector<Tensor> a;
   std::vector<float> r;
@@ -24,10 +24,12 @@ const Batch& ReplayBuffer::sample(int size) {
     a.push_back(step.action.toTensor());
     r.push_back(step.reward);
     n.push_back(next.toTensor());
+
+    auto reward = torch::from_blob(r.data(), {r.size()});
     return {
       stack(o),
       cat(a), //TODO: change this once action tensors are bigger than 1x1
-      from_blob(r.data(), {r.size()}),
+      reward,
       stack(n)
     };
   }

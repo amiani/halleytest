@@ -2,7 +2,7 @@
 // Created by amiani on 4/20/20.
 //
 
-#include "SACActor.h"
+#include "sacactor.h"
 
 Action SACActor::act(const Observation& o) {
   auto input = o.toTensor().to(DEVICE);

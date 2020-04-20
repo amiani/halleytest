@@ -5,7 +5,7 @@
 #pragma once
 
 #include "src/control/mdp.h"
-#include "torch/torch.h
+#include "torch/torch.h"
 using namespace torch;
 
 struct Step {
@@ -25,7 +25,7 @@ struct Batch {
 
 class ReplayBuffer {
 public:
-  const Batch& sample(int size);
+  Batch sample(int size);
   void addStep(Observation o, Action a, float r);
 
 private:
