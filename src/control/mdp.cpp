@@ -1,6 +1,6 @@
 #include "mdp.h"
 
-std::array<float, 6> EntityData::toBlob() {
+std::array<float, 6> EntityData::toBlob() const {
   return {
     position.x,
     position.y,
@@ -11,7 +11,7 @@ std::array<float, 6> EntityData::toBlob() {
   };
 }
 
-EntityData EntityData::normalize() {
+EntityData EntityData::normalize() const {
   return {
     cp::Vect(position.x/spaceSize.x, position.y/spaceSize.y),
     rotation / PI_CONSTANT,
@@ -23,7 +23,7 @@ EntityData EntityData::normalize() {
 const cp::Vect EntityData::spaceSize = cp::Vect(1920*4, 1080*4);
 const cp::Vect EntityData::maxVelocity = cp::Vect(1000, 1000);
 
-torch::Tensor Observation::toTensor() {
+torch::Tensor Observation::toTensor() const {
   std::array<float, dim> blob;
   blob.fill(0);
   
@@ -36,12 +36,16 @@ torch::Tensor Observation::toTensor() {
   return torch::from_blob(blob.data(), {dim}).clone();
 }
 
+torch::Tensor Action::toTensor() {
+  return torch::full({1}, torch::Scalar(atan2(target.y, target.x)));
+}
+
 #include "torch/nn/functional.h"
 namespace F = torch::nn::functional;
 
-void Batch::addTrajectory(std::vector<std::shared_ptr<Observation>>& obs,
-                          std::vector<std::shared_ptr<Action>>& acts,
-                          std::vector<float>& rews) {
+void TrajBatch::addTrajectory(std::vector<std::shared_ptr<Observation>>& obs,
+                              std::vector<std::shared_ptr<Action>>& acts,
+                              std::vector<float>& rews) {
   
   std::vector<torch::Tensor> obsVec;
   //std::vector<torch::Tensor> actsVec;
@@ -77,7 +81,7 @@ void Batch::addTrajectory(std::vector<std::shared_ptr<Observation>>& obs,
   numTrajectories++;
 }
 
-void Batch::padAndStack(torch::Tensor &batchTensor, torch::Tensor &newTensor, int dims) {
+void TrajBatch::padAndStack(torch::Tensor &batchTensor, torch::Tensor &newTensor, int dims) {
   newTensor = newTensor.unsqueeze(0);
   auto padding = newTensor.size(1) - batchTensor.size(1);
   std::vector<int64_t> pad = {0, abs(padding)};

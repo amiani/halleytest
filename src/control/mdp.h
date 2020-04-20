@@ -10,8 +10,8 @@ struct EntityData {
   float rotation;
   cp::Vect velocity;
   float health;
-  std::array<float, 6> toBlob();
-  EntityData normalize();
+  std::array<float, 6> toBlob() const;
+  EntityData normalize() const;
   static const cp::Vect spaceSize;
   static const cp::Vect maxVelocity;
   static const int maxHealth = 1000;
@@ -23,7 +23,7 @@ struct Observation {
   //EntityData enemies[1];
   std::vector<EntityData> detectedBodies;
   //EntityData allies[1];
-  torch::Tensor toTensor();
+  torch::Tensor toTensor() const;
   static const int dim = 6*31;
 };
 
@@ -32,9 +32,11 @@ struct Action {
   bool fire = false;
   cp::Vect target = cp::Vect();
   torch::Tensor logProb;
+  torch::Tensor toTensor();
 };
 
-class Batch {
+
+class TrajBatch {
 public:
   torch::Tensor observations;
   //torch::Tensor actions;
