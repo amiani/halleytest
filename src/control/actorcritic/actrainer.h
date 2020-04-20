@@ -11,7 +11,7 @@ using namespace torch;
 class ActorCritic : public Trainer {
 public:
   ActorCritic(String, String);
-  Actor improve() override;
+  void improve() override;
 
 private:
   jit::Module actor;

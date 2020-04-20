@@ -17,7 +17,7 @@ ActorCritic::ActorCritic(String actorPath, String criticPath)
 }
 
 float maxReturn = -1000;
-Actor ActorCritic::improve(const TrajBatch& batch) {
+void ActorCritic::improve() {
   auto observation = batch.observations.to(DEVICE);
   auto reward = batch.rewards.to(DEVICE);
   auto actionLogProbs = batch.actionLogProbs.to(DEVICE);

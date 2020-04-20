@@ -7,13 +7,19 @@
 
 #include <src/control/trainer.h>
 #include "sacactor.h"
+#include "replay_buffer.h"
 
 class SACTrainer : public Trainer {
 public:
-  Actor improve() override;
+  SACTrainer(String actorPath, String critic1Path, String critic2Path);
+  void addStep(Observation& o, Action& a, float r);
+  void improve() override;
 
 private:
-  std::shared_ptr<SACActor> actor;
+  const float GAMMA = .99;
+  const float TAU = .005;
+  const float LR = 1e-4;
+
   jit::Module critic1;
   jit::Module critic2;
   std::vector<Tensor> actorParameters;
@@ -24,8 +30,7 @@ private:
   std::unique_ptr<optim::Optimizer> actorOptimizer;
   std::unique_ptr<optim::Optimizer> critic1Optimizer;
   std::unique_ptr<optim::Optimizer> critic2Optimizer;
-  const float GAMMA = .99;
-  const float TAU = .005;
-  const float LR = 1e-4;
+
+  ReplayBuffer replay;
 };
 
