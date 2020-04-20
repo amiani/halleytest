@@ -7,11 +7,10 @@ public:
   void update(Halley::Time time, MainFamily& e) {
     if (frames % 8 == 0) {
       if (frames >= 500) terminal = true;
+      auto& action = updateController(time, e, terminal);
       if (terminal) {
-        updateController(time, e, true);
         getAPI().core->setStage(std::make_unique<GameStage>());
       } else {
-        auto& action = updateController(time, e, false);
         applyAction(e, action);
       }
     }
