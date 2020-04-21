@@ -14,6 +14,8 @@ class Actor(torch.nn.Module):
     def __init__(self, obdim, h1, h2, actiondim):
 
         super().__init__()
+        self.MINLOGSTD = -20
+        self.MAXLOGSTD = 2
         self.net = torch.nn.Sequential(
             torch.nn.Linear(obdim, h1),
             torch.nn.ReLU(),
@@ -28,6 +30,7 @@ class Actor(torch.nn.Module):
         net_out = self.net(obs)
         mu = self.mu_head(net_out)
         log_std = self.log_std_head(net_out)
+        log_std = torch.clamp(log_std, self.MINLOGSTD, self.MAXLOGSTD)
         std = torch.exp(log_std)
 
         if deterministic:
