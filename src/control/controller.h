@@ -2,10 +2,8 @@
 
 #include <halley.hpp>
 #include "mdp.h"
-#include "policy.h"
-#include "mdp.h"
-#include "trainer.h"
 #include "halley/src/engine/entity/include/halley/entity/components/transform_2d_component.h"
+#include "trainer.h"
 
 class Controller {
 public:
@@ -19,7 +17,7 @@ protected:
   std::vector<std::shared_ptr<Observation>> observations;
   std::vector<std::shared_ptr<Action>> actions;
   std::vector<float> rewards;
-  Batch batch;
+  TrajBatch batch;
   bool _isObserver = true;
 
 private:
@@ -40,11 +38,14 @@ private:
 
 class RLController : public Controller {
 public:
-  RLController(String actorPath, String criticPath);
-  const Action& update(Halley::Time t, Observation o, float reward) override;
+  RLController(std::unique_ptr<Trainer>);
+  RLController(std::shared_ptr<Actor>);
+  const Action& update(Halley::Time t, Observation o, float r) override;
   const Action& update(Halley::Time t) override;
 
 private:
-  Policy policy;
-  ActorCritic trainer;
+  bool train;
+  std::unique_ptr<Trainer> trainer;
+  //std::shared_ptr<Actor> actor;
+  std::shared_ptr<Actor> actor;
 };

@@ -2,6 +2,7 @@
 #include "chipmunk.hpp"
 #include "src/utils.h"
 #include <chrono>
+#include <src/control/sac/sac_trainer.h>
 
 bool Controller::isObserver() {
   return _isObserver;
@@ -47,12 +48,19 @@ const Action& InputController::update(Time t) {
   return *a;
 }
 
-RLController::RLController(String actorPath, String criticPath) : policy(actorPath), trainer(actorPath, criticPath) {}
+RLController::RLController(std::unique_ptr<Trainer> t)
+  : trainer(std::move(t)), actor(trainer->getActor()), train(true) {}
+
+RLController::RLController(std::shared_ptr<Actor> actor) : actor(actor), train(false) {}
 
 auto start = std::chrono::high_resolution_clock::now();
-const Action& RLController::update(Time time, Observation o, float reward) {
-  rewards.push_back(reward);
-  auto a = std::make_shared<Action>(policy.act(o));
+const Action& RLController::update(Time time, Observation o, float r) {
+  rewards.push_back(r);
+  auto a = std::make_shared<Action>(actor->act(o));
+  if (train) {
+    trainer->addStep(o, *a, r);
+  }
+  /*
   if (o.terminal) {
     batch.addTrajectory(observations, actions, rewards);
     observations.clear();
@@ -62,17 +70,17 @@ const Action& RLController::update(Time time, Observation o, float reward) {
     std::cout << "trajectory: " << batch.getNumTrajectories() << std::endl;
     auto stop = std::chrono::high_resolution_clock::now();
     std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << " milliseconds\n";
-     */
     start = std::chrono::high_resolution_clock::now();
     if (batch.getNumTrajectories() > 40) {
       std::cout << "\n~~~~GOT BATCH~~~~\n";
-      policy = trainer.improve(batch);
-      batch = Batch();
+      trainer.improve();
+      batch = TrajBatch();
     }
   } else {
     observations.push_back(std::make_shared<Observation>(std::move(o)));
     actions.push_back(a);
   }
+  */
 
   return *a;
 }
