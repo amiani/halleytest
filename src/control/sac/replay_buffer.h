@@ -30,7 +30,7 @@ public:
   int size();
 
 private:
-  std::vector<Trajectory> buffer = {Trajectory()};
+  std::vector<Trajectory> trajectories = {Trajectory()};
   int size_ = 0;
 };
 
