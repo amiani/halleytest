@@ -17,6 +17,10 @@ SACTrainer::SACTrainer(String actorPath, String critic1Path, String critic2Path)
     critic1Optimizer(std::make_unique<optim::Adam>(critic1Parameters, optim::AdamOptions(LR))),
     critic2Optimizer(std::make_unique<optim::Adam>(critic2Parameters, optim::AdamOptions(LR)))
 {
+  critic1.to(DEVICE);
+  critic2.to(DEVICE);
+  critic1Target.to(DEVICE);
+  critic2Target.to(DEVICE);
   critic1TargetParameters = getModuleParameters(critic1Target);
   critic2TargetParameters = getModuleParameters(critic2Target);
 }
@@ -31,17 +35,52 @@ void SACTrainer::addStep(Observation& o, Action& a, float r) {
 void SACTrainer::improve() {
   auto batch = replay.sample(256);
 
-  auto stateAction = cat({batch.observation, batch.action}, 1);
-  std::cout << "stateAction sizes: " << stateAction.sizes() << std::endl;
+  auto obsAction = cat({batch.observation, batch.action}, 1);
   //auto inputs = std::vector<torch::jit::IValue>{stateAction};
-  auto value1 = critic1.forward({stateAction}).toTensor();
-  auto value2 = critic2.forward({stateAction}).toTensor();
-  std::cout << "value1 sizes: " << value2.sizes() << std::endl;
+  auto value1 = critic1.forward({obsAction}).toTensor();
+  auto value2 = critic2.forward({obsAction}).toTensor();
+  //std::cout << "value1 sizes: " << value2.sizes() << std::endl;
 
-  //auto deterministic = torch::zeros({1});
-  auto actionSample = actor->getModule().forward({batch.next, {0}}).toTensor();
-  auto nextAction = cat({batch.next, actionSample}, 1);
-  //auto nextValue1 = critic1Target
+  auto deterministic = torch::zeros({1});
+  //std::cout << "batch.next.sizes: " << batch.next.sizes() << std::endl;
+  auto nextActionSample = actor->getModule().forward({batch.next, deterministic}).toTuple()->elements();
+  //std::cout << "actionSample[0]sizes: " << nextActionSample[0].toTensor().sizes() << std::endl;
+  auto nextSampledAction = cat({batch.next, nextActionSample[0].toTensor().unsqueeze(1)}, 1);
+  //std::cout << "nextAction.sizes: " << nextSampledAction.sizes() << std::endl;
+  auto nextValue1 = critic1Target.forward({nextSampledAction}).toTensor();
+  auto nextValue2 = critic2Target.forward({nextSampledAction}).toTensor();
+  auto nextValue = torch::min(nextValue1, nextValue2);
+  auto nextLogProbs = nextActionSample[1].toTensor();
+  auto target = batch.reward.add(GAMMA * (nextValue.sub(TEMP * nextLogProbs))).detach();
+
+  auto critic1Loss = mse_loss(value1, target);
+  auto critic2Loss = mse_loss(value2, target);
+  critic1Optimizer->zero_grad();
+  critic2Optimizer->zero_grad();
+  critic1Loss.backward();
+  critic2Loss.backward();
+  critic1Optimizer->step();
+  critic2Optimizer->step();
+
+  auto actionSample = actor->getModule().forward({batch.observation, deterministic}).toTuple()->elements();
+  //std::cout << "actionSample[0].toTensor().sizes().sizes: " << actionSample[0].toTensor().sizes() << std::endl;
+  auto obsSampledAction = cat({batch.observation, actionSample[0].toTensor().unsqueeze(1)}, 1);
+  //std::cout << "obsSampledAction" << obsSampledAction.sizes() << std::endl;
+  auto obsSampledActionValue1 = critic1.forward({obsSampledAction}).toTensor();
+  auto obsSampledActionValue2 = critic2.forward({obsSampledAction}).toTensor();
+  //std::cout << "obsSampledActionValue1" << obsSampledActionValue1.sizes() << std::endl;
+  auto obsSampledActionMinValue = torch::min(obsSampledActionValue1, obsSampledActionValue2).squeeze();
+  //std::cout << "obsSampledActionMinValue" << obsSampledActionMinValue.sizes() << std::endl;
+  auto logProbs = actionSample[1].toTensor();
+  //std::cout << "logProbs" << logProbs.sizes() << std::endl;
+  auto actorLoss = obsSampledActionMinValue.sub(TEMP * logProbs).mean();
+  //std::cout << "actor v: " << actorLoss.item<float>() << std::endl;
+  actorOptimizer->zero_grad();
+  actorLoss.backward();
+  actorOptimizer->step();
+
+  updateTargetParameters(critic1TargetParameters, critic1Parameters);
+  updateTargetParameters(critic2TargetParameters, critic2Parameters);
 }
 
 jit::Module SACTrainer::cloneModule(jit::Module module) {
@@ -49,4 +88,14 @@ jit::Module SACTrainer::cloneModule(jit::Module module) {
   module.save(stream);
   stream.seekg(0, std::ios::beg);
   return jit::load(stream);
+}
+
+void SACTrainer::updateTargetParameters(std::vector<Tensor> targetParams, std::vector<Tensor> criticParams) {
+  if (targetParams.size() != criticParams.size()) std::cout << "TARGET NOT SAME SIZE AS CRITIC\n";
+  for (
+    auto targetIter = targetParams.begin(), criticIter = criticParams.begin();
+    targetIter != targetParams.end();
+    ++targetIter, ++criticIter) {
+    *targetIter = (TAU * *criticIter).add((1-TAU) * *targetIter);
+  }
 }

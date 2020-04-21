@@ -17,10 +17,10 @@ public:
   void improve() override;
 
 private:
-  const float GAMMA = .99;
-  const float TAU = .005;
-  const float LR = 1e-4;
-  const float TEMPERATURE = .5;
+  static constexpr float GAMMA = .99;
+  static constexpr float TAU = .005;
+  static constexpr float TEMP = .5;
+  double LR = 1e-4;
 
   jit::Module critic1;
   jit::Module critic2;
@@ -38,5 +38,6 @@ private:
   ReplayBuffer replay;
 
   static jit::Module cloneModule(jit::Module);
+  static void updateTargetParameters(std::vector<Tensor>, std::vector<Tensor>);
 };
 
