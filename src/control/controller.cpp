@@ -60,12 +60,14 @@ const Action& RLController::update(Time time, Observation o, float r) {
   if (train) {
     trainer->addStep(o, *a, r);
   }
-  /*
   if (o.terminal) {
-    batch.addTrajectory(observations, actions, rewards);
+    float total = 0;
+    for (auto r : rewards) total += r;
+    std::cout << total << std::endl;
     observations.clear();
     actions.clear();
     rewards.clear();
+  }
     /*
     std::cout << "trajectory: " << batch.getNumTrajectories() << std::endl;
     auto stop = std::chrono::high_resolution_clock::now();
