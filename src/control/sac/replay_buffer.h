@@ -27,8 +27,10 @@ class ReplayBuffer {
 public:
   Batch sample(int size);
   void addStep(Observation o, Action a, float r);
+  int size();
 
 private:
-  std::vector<Trajectory> buffer;
+  std::vector<Trajectory> buffer = {Trajectory()};
+  int size_ = 0;
 };
 

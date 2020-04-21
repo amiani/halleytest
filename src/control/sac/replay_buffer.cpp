@@ -42,4 +42,9 @@ void ReplayBuffer::addStep(Observation o, Action a, float r) {
   } else {
     buffer.back().push_back(step);
   }
+  ++size_;
+}
+
+int ReplayBuffer::size() {
+  return size_;
 }
