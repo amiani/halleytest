@@ -3,7 +3,11 @@ from torch.distributions.normal import Normal
 
 
 def sampleaction(mu, std):
-    return Normal(mu, std).rsample()
+    dist = Normal(mu, std)
+    action = dist.rsample()
+    log_prob = dist.log_prob(action)
+    return action, log_prob
+
 
 
 class Actor(torch.nn.Module):
@@ -27,8 +31,11 @@ class Actor(torch.nn.Module):
         std = torch.exp(log_std)
 
         if deterministic:
-            return mu
+            return mu, None
         else:
+            if len(mu.size()) > 1:
+                mu = mu.squeeze()
+                std = std.squeeze()
             return self.sampleaction(mu, std)
 
 
