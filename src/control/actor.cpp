@@ -4,7 +4,7 @@
 
 #include "actor.h"
 
-Actor::Actor(::String path) : module(torch::jit::load(path)) {
+Actor::Actor(String path) : module(torch::jit::load(path)) {
   module.to(DEVICE);
 }
 
