@@ -12,8 +12,7 @@ Batch ReplayBuffer::sample(int size) {
 
   for (int i = 0; i != size; ++i) {
     auto& traj = buffer[rand() % buffer.size()];
-    int stepIndex;
-    stepIndex = rand() % (traj.size() - 1);
+    int stepIndex = rand() % (traj.size() - 1);
     auto& step = traj[stepIndex];
     auto& next = traj[stepIndex+1].observation;
     o.push_back(step.observation.toTensor());
