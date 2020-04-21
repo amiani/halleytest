@@ -20,6 +20,6 @@ cp::Vect halleyToChip(Halley::Vector2f v) {
   return cp::Vect(v.x, v.y);
 }
 
-bool isAnyNAN(torch::Tensor& t) {
+bool isAnyNAN(const torch::Tensor& t) {
   return torch::isnan(t).any().item<bool>();
 }

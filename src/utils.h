@@ -10,7 +10,7 @@ Halley::Vector2f chipToHalley(const cp::Vect&);
 cp::Vect halleyToChip(const Halley::Vector2f);
 
 const torch::Device DEVICE(torch::kCUDA);
-bool isAnyNAN(torch::Tensor&);
+bool isAnyNAN(const torch::Tensor&);
 
 enum BodyType {
   PLAYERSHIPBODY,
