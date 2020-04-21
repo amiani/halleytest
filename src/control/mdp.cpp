@@ -36,10 +36,6 @@ torch::Tensor Observation::toTensor() const {
   return torch::from_blob(blob.data(), {dim}).clone();
 }
 
-torch::Tensor Action::toTensor() {
-  return torch::full({1}, torch::Scalar(atan2(target.y, target.x)));
-}
-
 #include "torch/nn/functional.h"
 namespace F = torch::nn::functional;
 

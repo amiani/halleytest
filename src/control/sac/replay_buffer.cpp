@@ -18,14 +18,14 @@ Batch ReplayBuffer::sample(int size) {
       auto& step = traj[stepIndex];
       auto& next = traj[stepIndex + 1].observation;
       o.push_back(step.observation.toTensor());
-      a.push_back(step.action.toTensor());
+      a.push_back(step.action.tensor);
       r.push_back(step.reward);
       n.push_back(next.toTensor());
     }
   }
 
   auto observation = stack(o).to(DEVICE);
-  auto action = cat(a).unsqueeze(1).to(DEVICE); //TODO use stack once actions are more than 1x1
+  auto action = stack(a).to(DEVICE); //TODO use stack once actions are more than 1x1
   auto reward = torch::from_blob(r.data(), {r.size()}).to(DEVICE);
   auto nextObservation = stack(n).to(DEVICE);
   return {

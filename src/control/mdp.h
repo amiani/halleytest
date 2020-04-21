@@ -31,8 +31,8 @@ struct Action {
   bool throttle = false;
   bool fire = false;
   cp::Vect target = cp::Vect();
+  torch::Tensor tensor;
   torch::Tensor logProb;
-  torch::Tensor toTensor();
 };
 
 

@@ -14,6 +14,7 @@ Action SACActor::act(const Observation& o) {
   return {
     true,
     false,
-    target
+    target,
+    tensor
   };
 }
