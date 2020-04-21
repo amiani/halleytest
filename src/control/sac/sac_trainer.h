@@ -8,6 +8,7 @@
 #include <src/control/trainer.h>
 #include "sacactor.h"
 #include "replay_buffer.h"
+using namespace torch;
 
 class SACTrainer : public Trainer {
 public:
@@ -19,9 +20,12 @@ private:
   const float GAMMA = .99;
   const float TAU = .005;
   const float LR = 1e-4;
+  const float TEMPERATURE = .5;
 
   jit::Module critic1;
   jit::Module critic2;
+  jit::Module critic1Target;
+  jit::Module critic2Target;
   std::vector<Tensor> actorParameters;
   std::vector<Tensor> critic1Parameters;
   std::vector<Tensor> critic2Parameters;
@@ -32,5 +36,7 @@ private:
   std::unique_ptr<optim::Optimizer> critic2Optimizer;
 
   ReplayBuffer replay;
+
+  static jit::Module cloneModule(jit::Module);
 };
 
