@@ -30,8 +30,9 @@ private:
 	float zoom = 1;
 	int fps = 60;
 	String actorPath;
-	String criticPath;
-	
+	String critic1Path;
+  String critic2Path;
+
 	std::shared_ptr<InputService> inputService;
 	std::shared_ptr<ControllerService> controllerService;
 };
