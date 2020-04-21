@@ -34,6 +34,7 @@ void SACTrainer::addStep(Observation& o, Action& a, float r) {
 
 void SACTrainer::improve() {
   auto batch = replay.sample(256);
+  auto reward = batch.reward.unsqueeze(1);
 
   auto obsAction = cat({batch.observation, batch.action}, 1);
   //auto inputs = std::vector<torch::jit::IValue>{stateAction};
@@ -50,8 +51,14 @@ void SACTrainer::improve() {
   auto nextValue1 = critic1Target.forward({nextSampledAction}).toTensor();
   auto nextValue2 = critic2Target.forward({nextSampledAction}).toTensor();
   auto nextValue = torch::min(nextValue1, nextValue2);
-  auto nextLogProbs = nextActionSample[1].toTensor();
-  auto target = batch.reward.add(GAMMA * (nextValue.sub(TEMP * nextLogProbs))).detach();
+  auto nextLogProbs = nextActionSample[1].toTensor().unsqueeze(1);
+  auto target = reward.add(GAMMA * (nextValue.sub(TEMP * nextLogProbs))).detach();
+  /*
+  std::cout << "reward: " << reward.sizes() << std::endl;
+  std::cout << "nextValue: " << nextValue.sizes() << std::endl;
+  std::cout << "nextLogProbs: " << nextLogProbs.sizes() << std::endl;
+  std::cout << "target sizes: " << target.sizes() << std::endl;
+   */
 
   auto critic1Loss = mse_loss(value1, target);
   auto critic2Loss = mse_loss(value2, target);
