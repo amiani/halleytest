@@ -10,6 +10,7 @@ public:
   Actor(String path);
   Actor(torch::jit::script::Module module);
   virtual Action act(const Observation& o) =0;
+  const torch::jit::script::Module& getModule() { return module; }
 
 protected:
   torch::jit::script::Module module;
