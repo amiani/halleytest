@@ -11,7 +11,7 @@ Action SACActor::act(const Observation& o) {
   auto tensor = out[0].toTensor().detach();
   auto angle = tensor.item<float>();
   //std::cout << fmod(angle, 2*M_PI) << std::endl;
-  auto target = cp::Vect(cos(angle), sin(angle));
+  auto target = cp::Vect(cos(angle), sin(angle)) + o.self.position;
   return {
     true,
     false,
