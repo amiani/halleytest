@@ -9,7 +9,7 @@ Action SACActor::act(const Observation& o) {
   auto deterministic = torch::zeros({1}).to(DEVICE);
   auto out = module.forward({input, deterministic}).toTuple()->elements();
   auto tensor = out[0].toTensor().detach();
-  auto angle = tensor.item<float>();
+  auto angle = tensor.item<float>() * M_PI;
   //std::cout << fmod(angle, 2*M_PI) << std::endl;
   auto target = cp::Vect(cos(angle), sin(angle)) + o.self.position;
   return {

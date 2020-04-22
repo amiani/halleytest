@@ -1,4 +1,6 @@
+import math
 import torch
+import torch.nn.functional as F
 from torch.distributions.normal import Normal
 
 
@@ -34,12 +36,14 @@ class Actor(torch.nn.Module):
         std = torch.exp(log_std)
 
         if deterministic:
-            return mu, None
+            return torch.tanh(mu), None
         else:
             if len(mu.size()) > 1:
                 mu = mu.squeeze()
                 std = std.squeeze()
-            return self.sampleaction(mu, std)
+            action, log_prob = self.sampleaction(mu, std)
+            log_prob -= 2*math.log(2) - action - F.softplus(-2*action)
+            return torch.tanh(action), log_prob
 
 
 N, obdim, h1, h2, actiondim = 1, 6 * 31, 100, 75, 1
