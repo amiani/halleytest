@@ -17,9 +17,9 @@ public:
   void improve() override;
 
 private:
-  static constexpr float GAMMA = .99;
-  static constexpr float TAU = .005;
-  static constexpr float TEMP = .5;
+  static const float GAMMA;
+  static const float TAU;
+  static const float TEMP;
   double LR = 1e-4;
 
   jit::Module critic1;

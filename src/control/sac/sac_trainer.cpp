@@ -106,3 +106,7 @@ void SACTrainer::updateTargetParameters(std::vector<Tensor> targetParams, std::v
     *targetIter = (TAU * *criticIter).add((1-TAU) * *targetIter);
   }
 }
+
+const float SACTrainer::GAMMA = .99;
+const float SACTrainer::TAU = .005;
+const float SACTrainer::TEMP = .1;
