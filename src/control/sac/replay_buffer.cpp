@@ -37,7 +37,10 @@ Batch ReplayBuffer::sample(int size) {
 }
 
 void ReplayBuffer::addStep(Observation o, Action a, float r) {
-  Step step{o, a, r};
+  if (!trajectories.back().empty()) {
+    trajectories.back().back().reward = r;
+  }
+  Step step{o, a, 0};
   if (o.terminal) {
     trajectories.push_back(Trajectory{step});
   } else {

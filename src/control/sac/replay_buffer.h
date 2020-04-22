@@ -9,9 +9,9 @@
 using namespace torch;
 
 struct Step {
-    Observation observation;
-    Action action;
-    float reward;
+  Observation observation;
+  Action action;
+  float reward;
 };
 
 typedef std::vector<Step> Trajectory;
