@@ -61,9 +61,6 @@ const Action& RLController::update(Time time, Observation o, float r) {
     trainer->addStep(o, *a, r);
   }
   if (o.terminal) {
-    float total = 0;
-    for (auto r : rewards) total += r;
-    std::cout << total << std::endl;
     observations.clear();
     actions.clear();
     rewards.clear();
