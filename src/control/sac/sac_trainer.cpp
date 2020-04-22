@@ -32,6 +32,7 @@ void SACTrainer::addStep(Observation& o, Action& a, float r) {
   }
 }
 
+int frames = 0;
 void SACTrainer::improve() {
   auto batch = replay.sample(256);
   auto reward = batch.reward.unsqueeze(1);
@@ -80,14 +81,33 @@ void SACTrainer::improve() {
   //std::cout << "obsSampledActionMinValue" << obsSampledActionMinValue.sizes() << std::endl;
   auto logProbs = actionSample[1].toTensor();
   //std::cout << "logProbs" << logProbs.sizes() << std::endl;
-  auto actorLoss = obsSampledActionMinValue.sub(TEMP * logProbs).mean();
+  auto actorLoss = -obsSampledActionMinValue.sub(TEMP * logProbs).mean();
   //std::cout << "actor v: " << actorLoss.item<float>() << std::endl;
   actorOptimizer->zero_grad();
   actorLoss.backward();
   actorOptimizer->step();
 
+  //std::cout << "actorParameters: " << actorParameters[0][0][0].item<float>() << std::endl;
   updateTargetParameters(critic1TargetParameters, critic1Parameters);
   updateTargetParameters(critic2TargetParameters, critic2Parameters);
+
+  if (frames % 1000 == 0) {
+    //std::cout << "\nbatch action: " << batch.action[0].item<float>() << std::endl;
+    //std::cout << "nextActionSample: " << nextActionSample[0].toTensor()[0].item<float>() << std::endl;
+    std::cout << "\nvalue1: " << value1[0].item<float>() << std::endl;
+    std::cout << "reward: " << batch.reward[0].item<float>() << std::endl;
+    std::cout << "nextValue: " << nextValue[0].item<float>() << std::endl;
+    std::cout << "target: " << target[0].item<float>() << std::endl;
+    std::cout << "critic1 loss: " << critic1Loss.item<float>() << std::endl;
+    //std::cout << "critic2 loss: " << critic2Loss.item<float>() << std::endl;
+
+    actor->getModule().save("latestactor.pt");
+    critic1.save("critic1.pt");
+    critic2.save("critic2.pt");
+    critic1Target.save("critic1target.pt");
+    critic2Target.save("critic2target.pt");
+  }
+  frames++;
 }
 
 jit::Module SACTrainer::cloneModule(jit::Module module) {
