@@ -100,6 +100,7 @@ void SACTrainer::improve() {
     std::cout << "target: " << target[0].item<float>() << std::endl;
     std::cout << "critic1 loss: " << critic1Loss.item<float>() << std::endl;
     //std::cout << "critic2 loss: " << critic2Loss.item<float>() << std::endl;
+    replayBuffer.printMeanReturn(10);
 
     actor->getModule().save("latestactor.pt");
     critic1.save("critic1.pt");

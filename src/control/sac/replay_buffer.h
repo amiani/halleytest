@@ -27,6 +27,7 @@ class ReplayBuffer {
 public:
   Batch sample(int size);
   void addStep(Observation o, Action a, float r);
+  void printMeanReturn(uint numReturns);
   int size();
 
 private:

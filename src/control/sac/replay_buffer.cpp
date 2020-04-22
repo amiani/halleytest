@@ -49,6 +49,18 @@ void ReplayBuffer::addStep(Observation o, Action a, float r) {
   ++size_;
 }
 
+void ReplayBuffer::printMeanReturn(uint numReturns) {
+  if (numReturns <= trajectories.size()) {
+    float meanReturn = 0;
+    for (int i = 0; i != numReturns; ++i) {
+      auto& traj = *(trajectories.end() - i - 2);
+      for (auto& step : traj) meanReturn += step.reward;
+    }
+    meanReturn /= numReturns;
+    std::cout << "meanReturn: " << meanReturn << std::endl;
+  }
+}
+
 int ReplayBuffer::size() {
   return size_;
 }
