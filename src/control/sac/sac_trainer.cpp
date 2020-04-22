@@ -26,15 +26,15 @@ SACTrainer::SACTrainer(String actorPath, String critic1Path, String critic2Path)
 }
 
 void SACTrainer::addStep(Observation& o, Action& a, float r) {
-  replay.addStep(o, a, r);
-  if (replay.size() > 256) {
+  replayBuffer.addStep(o, a, r);
+  if (replayBuffer.size() > 256) {
     improve();
   }
 }
 
 int frames = 0;
 void SACTrainer::improve() {
-  auto batch = replay.sample(256);
+  auto batch = replayBuffer.sample(256);
   auto reward = batch.reward.unsqueeze(1);
 
   auto obsAction = cat({batch.observation, batch.action}, 1);

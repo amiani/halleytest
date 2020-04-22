@@ -35,7 +35,7 @@ private:
   std::unique_ptr<optim::Optimizer> critic1Optimizer;
   std::unique_ptr<optim::Optimizer> critic2Optimizer;
 
-  ReplayBuffer replay;
+  ReplayBuffer replayBuffer;
 
   static jit::Module cloneModule(jit::Module);
   static void updateTargetParameters(std::vector<Tensor>, std::vector<Tensor>);
