@@ -51,8 +51,8 @@ void SACTrainer::improve() {
   auto nextValue1 = critic1Target.forward({nextSampledAction}).toTensor();
   auto nextValue2 = critic2Target.forward({nextSampledAction}).toTensor();
   auto nextValue = torch::min(nextValue1, nextValue2);
-  auto nextLogProbs = nextActionSample[1].toTensor().unsqueeze(1);
-  auto target = reward.add(GAMMA * (nextValue.sub(TEMP * nextLogProbs))).detach();
+  auto nextLogProb = nextActionSample[1].toTensor().unsqueeze(1);
+  auto target = reward.add(GAMMA * (nextValue.sub(TEMP * nextLogProb))).detach();
   /*
   std::cout << "reward: " << reward.sizes() << std::endl;
   std::cout << "nextValue: " << nextValue.sizes() << std::endl;
