@@ -21,6 +21,7 @@ struct Batch {
   Tensor action;
   Tensor reward;
   Tensor next;
+  Tensor done;
 };
 
 class ReplayBuffer {

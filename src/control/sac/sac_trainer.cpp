@@ -54,7 +54,7 @@ void SACTrainer::improve() {
   auto nextQ2 = critic2Target.forward({nextSampledAction}).toTensor();
   auto nextQ = torch::min(nextQ1, nextQ2);
   auto nextLogProb = nextActionSample[1].toTensor().unsqueeze(1);
-  auto target = reward + (GAMMA * (nextQ - TEMP * nextLogProb)).detach();
+  auto target = reward + GAMMA * (1 - batch.done) * (nextQ - TEMP * nextLogProb).detach();
 
   auto critic1Loss = mse_loss(q1, target);
   auto critic2Loss = mse_loss(q2, target);

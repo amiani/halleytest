@@ -10,6 +10,7 @@ Batch ReplayBuffer::sample(int size) {
   std::vector<Tensor> a;
   std::vector<float> r;
   std::vector<Tensor> n;
+  std::vector<int> d;
 
   for (int i = 0; i != size; ++i) {
     auto& traj = trajectories[rand() % trajectories.size()];
@@ -21,6 +22,11 @@ Batch ReplayBuffer::sample(int size) {
       a.push_back(step.action.tensor);
       r.push_back(step.reward);
       n.push_back(next.toTensor());
+      if (next.terminal) {
+        d.push_back(1);
+      } else {
+        d.push_back(0);
+      }
     }
   }
 
@@ -28,11 +34,13 @@ Batch ReplayBuffer::sample(int size) {
   auto action = stack(a).to(DEVICE);
   auto reward = torch::from_blob(r.data(), {r.size()}).to(DEVICE);
   auto nextObservation = stack(n).to(DEVICE);
+  auto done = torch::from_blob(d.data(), {d.size()}).to(DEVICE);
   return {
     observation,
     action,
     reward,
-    nextObservation
+    nextObservation,
+    done
   };
 }
 
