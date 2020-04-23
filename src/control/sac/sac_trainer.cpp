@@ -41,6 +41,58 @@ void SACTrainer::addStep(Observation& o, Action& a, float r) {
 int frames = 0;
 void SACTrainer::improve() {
   auto batch = replayBuffer.sample(256);
+  auto reward = batch.reward;
+
+  auto indices = batch.action.toType(torch::kLong);
+  auto q1 = critic1.forward({batch.observation}).toTensor().gather(1, indices);
+  auto q2 = critic2.forward({batch.observation}).toTensor().gather(1, indices);
+
+  auto nextPi = actor->getModule().forward({batch.next}).toTensor();
+  auto nextLogProb = nextPi.log();
+  auto nextQ1 = critic1Target.forward({batch.next}).toTensor();
+  auto nextQ2 = critic2Target.forward({batch.next}).toTensor();
+  auto minNextQ = torch::min(nextQ1, nextQ2);
+  auto nextV = (nextPi * (minNextQ - TEMP * nextLogProb)).mean({1});
+  auto target = (reward + GAMMA * (1 - batch.done) * nextV).detach();
+
+  auto critic1Loss = mse_loss(q1, target);
+  auto critic2Loss = mse_loss(q2, target);
+  critic1Optimizer->zero_grad();
+  critic2Optimizer->zero_grad();
+  critic1Loss.backward();
+  critic2Loss.backward();
+  critic1Optimizer->step();
+  critic2Optimizer->step();
+
+  auto pi = actor->getModule().forward({batch.observation}).toTensor();
+  auto logProb = pi.log();
+  q1 = critic1.forward({batch.observation}).toTensor();
+  q2 = critic2.forward({batch.observation}).toTensor();
+  auto minQ = torch::min(q1, q2);
+  auto actorLoss = (pi * (TEMP * logProb - minQ)).sum({1}).mean();
+  actorOptimizer->zero_grad();
+  actorLoss.backward();
+  actorOptimizer->step();
+
+  updateTargetParameters(critic1TargetParameters, critic1Parameters);
+  updateTargetParameters(critic2TargetParameters, critic2Parameters);
+
+  if (frames % 1000 == 0) {
+    std::cout << "\ncritic1 loss: " << critic1Loss.item<float>() << std::endl;
+    std::cout << "actor loss: " << actorLoss.item<float>() << std::endl;
+    replayBuffer.printMeanReturn(5);
+
+    actor->getModule().save("latestactor.pt");
+    critic1.save("latestcritic1.pt");
+    critic2.save("latestcritic2.pt");
+    critic1Target.save("latestcritic1target.pt");
+    critic2Target.save("latestcritic2target.pt");
+  }
+  frames++;
+}
+
+void SACTrainer::improveContinuous() {
+  auto batch = replayBuffer.sample(256);
   auto reward = batch.reward.unsqueeze(1);
 
   auto obsAction = cat({batch.observation, batch.action}, 1);

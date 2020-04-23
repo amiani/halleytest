@@ -12,7 +12,7 @@ def sampleaction(mu, std):
 
 
 
-class Actor(torch.nn.Module):
+class GaussianActor(torch.nn.Module):
     def __init__(self, obdim, h1, h2, actiondim):
 
         super().__init__()
@@ -47,6 +47,6 @@ class Actor(torch.nn.Module):
 
 
 N, obdim, h1, h2, actiondim = 1, 6 * 31+2, 100, 100, 1
-module = Actor(obdim, h1, h2, actiondim)
+module = GaussianActor(obdim, h1, h2, actiondim)
 script_module = torch.jit.script(module)
-script_module.save('actor.pt')
+script_module.save('gaussian_actor.pt')

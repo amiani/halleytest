@@ -17,6 +17,7 @@ public:
   SACTrainer(String actorPath, String critic1Path, String critic2Path);
   void addStep(Observation& o, Action& a, float r);
   void improve() override;
+  void improveContinuous();
 
 private:
   static const float GAMMA;

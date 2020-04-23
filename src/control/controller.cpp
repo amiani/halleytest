@@ -30,11 +30,7 @@ InputController::InputController(
 }
 
 const Action& InputController::update(Time t, Observation o, float reward) {
-  observations.push_back(std::make_shared<Observation>(o));
-  rewards.push_back(reward);
-  if (o.terminal && _isObserver) {
-    batch.addTrajectory(observations, actions, rewards);
-  }
+  //add tuple to internal batch?
   return update(t);
 }
 
@@ -43,7 +39,11 @@ const Action& InputController::update(Time t) {
   auto a = std::make_shared<Action>();
   a->throttle = device.isButtonDown(3);
   a->fire = device.isButtonPressed(4);
-  a->target = screenToChip(device.getPosition(), halleyToChip(cameraTransform.getGlobalPosition()));
+  if (device.isButtonDown(2)) {
+    a->direction = LEFT;
+  } else if (device.isButtonDown(1)) {
+    a->direction = RIGHT;
+  }
   actions.push_back(a);
   return *a;
 }
@@ -55,32 +55,10 @@ RLController::RLController(std::shared_ptr<Actor> actor, bool train) : actor(act
 
 auto start = std::chrono::high_resolution_clock::now();
 const Action& RLController::update(Time time, Observation o, float r) {
-  rewards.push_back(r);
   auto a = std::make_shared<Action>(actor->act(o));
   if (train) {
     trainer->addStep(o, *a, r);
   }
-  if (o.terminal) {
-    observations.clear();
-    actions.clear();
-    rewards.clear();
-  }
-    /*
-    std::cout << "trajectory: " << batch.getNumTrajectories() << std::endl;
-    auto stop = std::chrono::high_resolution_clock::now();
-    std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(stop - start).count() << " milliseconds\n";
-    start = std::chrono::high_resolution_clock::now();
-    if (batch.getNumTrajectories() > 40) {
-      std::cout << "\n~~~~GOT BATCH~~~~\n";
-      trainer.improve();
-      batch = TrajBatch();
-    }
-  } else {
-    observations.push_back(std::make_shared<Observation>(std::move(o)));
-    actions.push_back(a);
-  }
-  */
-
   return *a;
 }
 
