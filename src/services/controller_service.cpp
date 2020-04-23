@@ -15,7 +15,7 @@ std::shared_ptr<InputController> ControllerService::makeInputController(
 
 std::shared_ptr<RLController> ControllerService::makeRLController() {
   auto trainer = std::make_unique<SACTrainer>(actorPath, critic1Path, critic2Path);
-  auto c = std::make_shared<RLController>(std::move(trainer));
+  auto c = std::make_shared<RLController>(std::move(trainer), true);
   rlControllers.push_back(c);
   return c;
 }

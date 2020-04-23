@@ -38,8 +38,8 @@ private:
 
 class RLController : public Controller {
 public:
-  RLController(std::unique_ptr<Trainer>);
-  RLController(std::shared_ptr<Actor>);
+  RLController(std::unique_ptr<Trainer>, bool train = true);
+  RLController(std::shared_ptr<Actor>, bool train = true);
   const Action& update(Halley::Time t, Observation o, float r) override;
   const Action& update(Halley::Time t) override;
 

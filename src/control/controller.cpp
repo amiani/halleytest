@@ -48,10 +48,10 @@ const Action& InputController::update(Time t) {
   return *a;
 }
 
-RLController::RLController(std::unique_ptr<Trainer> t)
-  : trainer(std::move(t)), actor(trainer->getActor()), train(true) {}
+RLController::RLController(std::unique_ptr<Trainer> t, bool train)
+  : trainer(std::move(t)), actor(trainer->getActor()), train(train) {}
 
-RLController::RLController(std::shared_ptr<Actor> actor) : actor(actor), train(false) {}
+RLController::RLController(std::shared_ptr<Actor> actor, bool train) : actor(actor), train(train) {}
 
 auto start = std::chrono::high_resolution_clock::now();
 const Action& RLController::update(Time time, Observation o, float r) {
