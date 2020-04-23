@@ -4,8 +4,10 @@
 
 #pragma once
 
-#include "src/control/mdp.h"
+#include "src/control/observation.h"
 #include "torch/torch.h"
+#include "src/control/action.h"
+
 using namespace torch;
 
 struct Step {

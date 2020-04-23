@@ -1,10 +1,11 @@
 #pragma once
 
-#include "src/control/mdp.h"
+#include "src/control/observation.h"
 #include "torch/script.h"
 #include "src/control/distributions/normal.h"
 #include "src/utils.h"
 #include "src/control/actor.h"
+#include "src/control/action.h"
 
 class ACActor : public Actor {
 public:

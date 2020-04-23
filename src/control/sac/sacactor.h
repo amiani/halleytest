@@ -5,6 +5,7 @@
 #pragma once
 
 #include <src/control/actor.h>
+#include "src/control/action.h"
 
 class SACActor : public Actor {
 public:

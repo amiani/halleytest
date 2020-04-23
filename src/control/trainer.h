@@ -5,6 +5,7 @@
 #pragma once
 
 #include "actor.h"
+#include "action.h"
 
 class Trainer {
 public:

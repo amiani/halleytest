@@ -1,6 +1,7 @@
 #include "systems/control_system.h"
 #include "chipmunk.hpp"
 #include "src/game_stage.h"
+#include "src/control/action.h"
 
 class ControlSystem final : public ControlSystemBase<ControlSystem> {
 public:

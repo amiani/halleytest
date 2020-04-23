@@ -8,6 +8,8 @@
 #include <src/control/trainer.h>
 #include "sacactor.h"
 #include "replay_buffer.h"
+#include "src/control/action.h"
+
 using namespace torch;
 
 class SACTrainer : public Trainer {

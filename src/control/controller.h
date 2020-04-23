@@ -1,9 +1,10 @@
 #pragma once
 
 #include <halley.hpp>
-#include "mdp.h"
+#include "observation.h"
 #include "halley/src/engine/entity/include/halley/entity/components/transform_2d_component.h"
 #include "trainer.h"
+#include "action.h"
 
 class Controller {
 public:
@@ -17,7 +18,6 @@ protected:
   std::vector<std::shared_ptr<Observation>> observations;
   std::vector<std::shared_ptr<Action>> actions;
   std::vector<float> rewards;
-  TrajBatch batch;
   bool _isObserver = true;
 
 private:

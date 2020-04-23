@@ -2,7 +2,6 @@
 
 #include <src/control/trainer.h>
 #include "acactor.h"
-#include "src/control/mdp.h"
 #include "torch/script.h"
 #include "torch/torch.h"
 

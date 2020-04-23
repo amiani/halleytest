@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/control/mdp.h"
+#include "src/control/observation.h"
 #include "src/control/controller.h"
 #include "src/control/actorcritic/actrainer.h"
 #include <halley.hpp>

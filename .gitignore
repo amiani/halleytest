@@ -4,6 +4,7 @@ bin/
 build/
 build-external/
 cmake-build-debug/
+cmake-build-release
 gen/
 .vscode/
 lib/libtorch/
