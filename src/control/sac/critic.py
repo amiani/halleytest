@@ -1,6 +1,6 @@
 import torch
 
-N, obdim, acdim, h1, h2 = 1, 6*31, 1, 100, 75
+N, obdim, acdim, h1, h2 = 1, 6*31+2, 1, 100, 100
 
 critic = torch.nn.Sequential(
     torch.nn.Linear(obdim+acdim, h1),
