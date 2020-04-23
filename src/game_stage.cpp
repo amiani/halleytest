@@ -13,7 +13,7 @@ GameStage::GameStage()
 
 void GameStage::init()
 {
-	auto& game = dynamic_cast<HalleyTestGame&>(getGame());
+	auto& game = dynamic_cast<SpaceGame&>(getGame());
   auto& res = getResources();
 	
 	painterService = std::make_shared<PainterService>();
@@ -31,7 +31,7 @@ void GameStage::init()
 
 void GameStage::onFixedUpdate(Time t)
 {
-	dynamic_cast<HalleyTestGame&>(getGame()).getInputService()->update(t);
+	dynamic_cast<SpaceGame&>(getGame()).getInputService()->update(t);
   world->step(TimeLine::FixedUpdate, t);
 }
 

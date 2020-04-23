@@ -10,7 +10,7 @@ void initSDLAudioPlugin(IPluginRegistry &registry);
 void initSDLInputPlugin(IPluginRegistry &registry);
 void initAsioPlugin(IPluginRegistry &registry);
 
-void HalleyTestGame::init(const Environment& env, const Vector<String>& args) {
+void SpaceGame::init(const Environment& env, const Vector<String>& args) {
   if (!args.empty()) {
     fps = std::stoi(args[0]);
     actorPath = args[1];
@@ -19,7 +19,7 @@ void HalleyTestGame::init(const Environment& env, const Vector<String>& args) {
   }
 }
 
-int HalleyTestGame::initPlugins(IPluginRegistry& registry)
+int SpaceGame::initPlugins(IPluginRegistry& registry)
 {
   if (fps > 0) {
     initOpenGLPlugin(registry);
@@ -35,9 +35,9 @@ int HalleyTestGame::initPlugins(IPluginRegistry& registry)
 	return HalleyAPIFlags::Video | HalleyAPIFlags::Audio | HalleyAPIFlags::Input | HalleyAPIFlags::Network | HalleyAPIFlags::Platform;
 }
 
-void HalleyTestGame::initResourceLocator(const Path& gamePath, const Path& assetsPath, const Path& unpackedAssetsPath, ResourceLocator& locator) {
+void SpaceGame::initResourceLocator(const Path& gamePath, const Path& assetsPath, const Path& unpackedAssetsPath, ResourceLocator& locator) {
 	constexpr bool localAssets = Debug::isDebug();
-	if (localAssets) {
+	if (true) { //if (localAssets)
 		locator.addFileSystem(unpackedAssetsPath);
 	} else {
 		const String packs[] = { "music.dat", "sfx.dat", "gameplay.dat", "images.dat", "shaders.dat", "ui.dat", "config.dat" };
@@ -47,22 +47,22 @@ void HalleyTestGame::initResourceLocator(const Path& gamePath, const Path& asset
 	}
 }
 
-String HalleyTestGame::getName() const
+String SpaceGame::getName() const
 {
 	return "HalleyTest";
 }
 
-String HalleyTestGame::getDataPath() const
+String SpaceGame::getDataPath() const
 {
 	return "Halley/halleytest";
 }
 
-bool HalleyTestGame::isDevMode() const
+bool SpaceGame::isDevMode() const
 {
 	return true;
 }
 
-std::unique_ptr<Stage> HalleyTestGame::startGame(const HalleyAPI* api)
+std::unique_ptr<Stage> SpaceGame::startGame(const HalleyAPI* api)
 {
 	this->api = api;
 
@@ -92,23 +92,23 @@ std::unique_ptr<Stage> HalleyTestGame::startGame(const HalleyAPI* api)
 	return std::make_unique<GameStage>();
 }
 
-std::shared_ptr<InputService> HalleyTestGame::getInputService() const
+std::shared_ptr<InputService> SpaceGame::getInputService() const
 {
 	return inputService;
 }
 
-std::shared_ptr<ControllerService> HalleyTestGame::getControllerService() const {
+std::shared_ptr<ControllerService> SpaceGame::getControllerService() const {
   return controllerService;
 }
 
-float HalleyTestGame::getZoom() const
+float SpaceGame::getZoom() const
 {
 	return zoom;
 }
 
-bool HalleyTestGame::shouldCreateSeparateConsole() const
+bool SpaceGame::shouldCreateSeparateConsole() const
 {
 	return Debug::isDebug();
 }
 
-HalleyGame(HalleyTestGame);
+HalleyGame(SpaceGame);

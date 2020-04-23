@@ -6,7 +6,7 @@
 
 using namespace Halley;
 
-class HalleyTestGame : public Game {
+class SpaceGame : public Game {
 public:
 	void init(const Environment& env, const Vector<String>& args) override;
 	int initPlugins(IPluginRegistry& registry) override;
