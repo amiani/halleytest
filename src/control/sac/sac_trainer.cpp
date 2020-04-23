@@ -44,31 +44,20 @@ void SACTrainer::improve() {
   auto reward = batch.reward.unsqueeze(1);
 
   auto obsAction = cat({batch.observation, batch.action}, 1);
-  //auto inputs = std::vector<torch::jit::IValue>{stateAction};
-  auto value1 = critic1.forward({obsAction}).toTensor();
-  auto value2 = critic2.forward({obsAction}).toTensor();
-  //std::cout << "value1 sizes: " << value2.sizes() << std::endl;
+  auto q1 = critic1.forward({obsAction}).toTensor();
+  auto q2 = critic2.forward({obsAction}).toTensor();
 
   auto deterministic = torch::zeros({1});
-  //std::cout << "batch.next.sizes: " << batch.next.sizes() << std::endl;
   auto nextActionSample = actor->getModule().forward({batch.next, deterministic}).toTuple()->elements();
-  //std::cout << "actionSample[0]sizes: " << nextActionSample[0].toTensor().sizes() << std::endl;
   auto nextSampledAction = cat({batch.next, nextActionSample[0].toTensor().unsqueeze(1)}, 1);
-  //std::cout << "nextAction.sizes: " << nextSampledAction.sizes() << std::endl;
-  auto nextValue1 = critic1Target.forward({nextSampledAction}).toTensor();
-  auto nextValue2 = critic2Target.forward({nextSampledAction}).toTensor();
-  auto nextValue = torch::min(nextValue1, nextValue2);
+  auto nextQ1 = critic1Target.forward({nextSampledAction}).toTensor();
+  auto nextQ2 = critic2Target.forward({nextSampledAction}).toTensor();
+  auto nextQ = torch::min(nextQ1, nextQ2);
   auto nextLogProb = nextActionSample[1].toTensor().unsqueeze(1);
-  auto target = reward.add(GAMMA * (nextValue.sub(TEMP * nextLogProb))).detach();
-  /*
-  std::cout << "reward: " << reward.sizes() << std::endl;
-  std::cout << "nextValue: " << nextValue.sizes() << std::endl;
-  std::cout << "nextLogProbs: " << nextLogProbs.sizes() << std::endl;
-  std::cout << "target sizes: " << target.sizes() << std::endl;
-   */
+  auto target = reward + (GAMMA * (nextQ - TEMP * nextLogProb)).detach();
 
-  auto critic1Loss = mse_loss(value1, target);
-  auto critic2Loss = mse_loss(value2, target);
+  auto critic1Loss = mse_loss(q1, target);
+  auto critic2Loss = mse_loss(q2, target);
   critic1Optimizer->zero_grad();
   critic2Optimizer->zero_grad();
   critic1Loss.backward();
@@ -77,42 +66,29 @@ void SACTrainer::improve() {
   critic2Optimizer->step();
 
   auto actionSample = actor->getModule().forward({batch.observation, deterministic}).toTuple()->elements();
-  //std::cout << "actionSample[0].toTensor().sizes().sizes: " << actionSample[0].toTensor().sizes() << std::endl;
   auto obsSampledAction = cat({batch.observation, actionSample[0].toTensor().unsqueeze(1)}, 1);
-  //std::cout << "obsSampledAction" << obsSampledAction.sizes() << std::endl;
-  auto obsSampledActionValue1 = critic1.forward({obsSampledAction}).toTensor();
-  auto obsSampledActionValue2 = critic2.forward({obsSampledAction}).toTensor();
-  //std::cout << "obsSampledActionValue1" << obsSampledActionValue1.sizes() << std::endl;
-  auto obsSampledActionMinValue = torch::min(obsSampledActionValue1, obsSampledActionValue2).squeeze();
-  //std::cout << "obsSampledActionMinValue" << obsSampledActionMinValue.sizes() << std::endl;
+  auto obsSampledActionQ1 = critic1.forward({obsSampledAction}).toTensor();
+  auto obsSampledActionQ2 = critic2.forward({obsSampledAction}).toTensor();
+  auto obsSampledActionMinValue = torch::min(obsSampledActionQ1, obsSampledActionQ2).squeeze();
   auto logProbs = actionSample[1].toTensor();
-  //std::cout << "logProbs" << logProbs.sizes() << std::endl;
-  auto actorLoss = -obsSampledActionMinValue.sub(TEMP * logProbs).mean();
-  //std::cout << "actor v: " << actorLoss.item<float>() << std::endl;
+  auto actorLoss = (TEMP * logProbs - obsSampledActionMinValue).mean();
   actorOptimizer->zero_grad();
   actorLoss.backward();
   actorOptimizer->step();
 
-  //std::cout << "actorParameters: " << actorParameters[0][0][0].item<float>() << std::endl;
   updateTargetParameters(critic1TargetParameters, critic1Parameters);
   updateTargetParameters(critic2TargetParameters, critic2Parameters);
 
   if (frames % 1000 == 0) {
-    //std::cout << "\nbatch action: " << batch.action[0].item<float>() << std::endl;
-    //std::cout << "nextActionSample: " << nextActionSample[0].toTensor()[0].item<float>() << std::endl;
-    std::cout << "\nvalue1: " << value1[0].item<float>() << std::endl;
-    std::cout << "reward: " << batch.reward[0].item<float>() << std::endl;
-    std::cout << "nextValue: " << nextValue[0].item<float>() << std::endl;
-    std::cout << "target: " << target[0].item<float>() << std::endl;
-    std::cout << "critic1 loss: " << critic1Loss.item<float>() << std::endl;
-    //std::cout << "critic2 loss: " << critic2Loss.item<float>() << std::endl;
-    replayBuffer.printMeanReturn(10);
+    std::cout << "\ncritic1 loss: " << critic1Loss.item<float>() << std::endl;
+    std::cout << "actor loss: " << actorLoss.item<float>() << std::endl;
+    replayBuffer.printMeanReturn(5);
 
     actor->getModule().save("latestactor.pt");
-    critic1.save("critic1.pt");
-    critic2.save("critic2.pt");
-    critic1Target.save("critic1target.pt");
-    critic2Target.save("critic2target.pt");
+    critic1.save("latestcritic1.pt");
+    critic2.save("latestcritic2.pt");
+    critic1Target.save("latestcritic1target.pt");
+    critic2Target.save("latestcritic2target.pt");
   }
   frames++;
 }
