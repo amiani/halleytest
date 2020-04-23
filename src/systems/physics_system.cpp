@@ -89,6 +89,7 @@ public:
       auto playerBody = arb.getBodyB();
       auto player = getEntity(playerBody);
       sendMessage(player->getEntityId(), ReachedGoalMessage());
+      std::cout << "reached goal!!!\n";
       return false;
     });
 
@@ -104,8 +105,8 @@ public:
   }
 
   void addBoundaries() {
-    auto halfx = 1920/2;
-    auto halfy = 1080/2;
+    auto halfx = 1920;
+    auto halfy = 1080;
     addBoundary(cp::Vect(0, -halfy), cp::Vect(-halfx, 0), cp::Vect(halfx, 0));
     addBoundary(cp::Vect(-halfx, 0), cp::Vect(0, -halfy), cp::Vect(0, halfy));
     addBoundary(cp::Vect(0, halfy), cp::Vect(-halfx, 0), cp::Vect(halfx, 0));

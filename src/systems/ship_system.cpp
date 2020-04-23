@@ -21,9 +21,10 @@ using namespace Halley;
 class ShipSystem final : public ShipSystemBase<ShipSystem> {
 public:
   void init(){
-    auto goal = spawnGoal();
-    auto goalPosition = goal.getComponent<BodyComponent>().body->getPosition();
     auto player = spawnPlayerShip(shipService->getShip("large_grey"));
+    auto playerPosition = player.getComponent<BodyComponent>().body->getPosition();
+    auto goal = spawnGoal(playerPosition);
+    auto goalPosition = goal.getComponent<BodyComponent>().body->getPosition();
     player.addComponent(GoalComponent(goalPosition));
   }
 
@@ -41,6 +42,9 @@ public:
 
     cp::Float moment = cp::momentForCircle(config.mass, 0, config.radius);
     auto body = std::make_shared<cp::Body>(config.mass, moment);
+    auto randx = 1920 * ((double)rand()/RAND_MAX*2.0-1.0);
+    auto randy = 1080 * ((double)rand()/RAND_MAX*2.0-1.0);
+    body->setPosition(cp::Vect(randx, randy));
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
     shape->setFilter({
       .categories = PLAYERHULL,
@@ -84,8 +88,14 @@ public:
     return ship;
   }
 
-  EntityRef spawnGoal() {
-    auto position = cp::Vect(200, 200);
+  EntityRef spawnGoal(cp::Vect& playerPosition) {
+    double randx, randy;
+    cp::Vect position;
+    do {
+      randx = 1920 * ((double)rand()/RAND_MAX*2.0-1.0);
+      randy = 1080 * ((double)rand()/RAND_MAX*2.0-1.0);
+      position = cp::Vect(200*randx, 200*randy);
+    } while(cp::Vect::dist(position, playerPosition) < 100);
     auto body = std::make_shared<cp::Body>(1, 1);
     body->setPosition(position);
     auto shape = std::make_shared<cp::CircleShape>(body, 50);
