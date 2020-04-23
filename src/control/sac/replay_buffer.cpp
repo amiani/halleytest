@@ -25,7 +25,7 @@ Batch ReplayBuffer::sample(int size) {
   }
 
   auto observation = stack(o).to(DEVICE);
-  auto action = stack(a).to(DEVICE); //TODO use stack once actions are more than 1x1
+  auto action = stack(a).to(DEVICE);
   auto reward = torch::from_blob(r.data(), {r.size()}).to(DEVICE);
   auto nextObservation = stack(n).to(DEVICE);
   return {
@@ -36,21 +36,25 @@ Batch ReplayBuffer::sample(int size) {
   };
 }
 
+Step lastStep;
 void ReplayBuffer::addStep(Observation o, Action a, float r) {
-  if (!trajectories.back().empty()) {
-    trajectories.back().back().reward = r;
+  if (size_ > 200000) {
+    size_ -= trajectories.begin()->size();
+    trajectories.erase(trajectories.begin());
   }
-  Step step{o, a, 0};
-  if (o.terminal) {
-    trajectories.push_back(Trajectory{step});
-  } else {
-    trajectories.back().push_back(step);
+  if (size_ > 0) {
+    lastStep.reward = r;
+    trajectories.back().push_back(lastStep);
+    if (o.terminal) {
+      trajectories.push_back(Trajectory());
+    }
   }
+  lastStep = {o, a};
   ++size_;
 }
 
 void ReplayBuffer::printMeanReturn(uint numReturns) {
-  if (numReturns <= trajectories.size()) {
+  if (numReturns < trajectories.size()) {
     float meanReturn = 0;
     for (int i = 0; i != numReturns; ++i) {
       auto& traj = *(trajectories.end() - i - 2);
