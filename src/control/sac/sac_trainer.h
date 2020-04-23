@@ -38,6 +38,6 @@ private:
   ReplayBuffer replayBuffer;
 
   static jit::Module cloneModule(jit::Module);
-  static void updateTargetParameters(std::vector<Tensor>, std::vector<Tensor>);
+  static void updateTargetParameters(std::vector<Tensor>&, std::vector<Tensor>&);
 };
 

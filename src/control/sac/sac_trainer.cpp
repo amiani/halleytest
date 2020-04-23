@@ -23,6 +23,12 @@ SACTrainer::SACTrainer(String actorPath, String critic1Path, String critic2Path)
   critic2Target.to(DEVICE);
   critic1TargetParameters = getModuleParameters(critic1Target);
   critic2TargetParameters = getModuleParameters(critic2Target);
+  for (auto& p : critic1TargetParameters) {
+    p.requires_grad_(false);
+  }
+  for (auto& p : critic2TargetParameters) {
+    p.requires_grad_(false);
+  }
 }
 
 void SACTrainer::addStep(Observation& o, Action& a, float r) {
@@ -118,13 +124,14 @@ jit::Module SACTrainer::cloneModule(jit::Module module) {
   return jit::load(stream);
 }
 
-void SACTrainer::updateTargetParameters(std::vector<Tensor> targetParams, std::vector<Tensor> criticParams) {
+void SACTrainer::updateTargetParameters(std::vector<Tensor>& targetParams, std::vector<Tensor>& criticParams) {
   if (targetParams.size() != criticParams.size()) std::cout << "TARGET NOT SAME SIZE AS CRITIC\n";
   for (
     auto targetIter = targetParams.begin(), criticIter = criticParams.begin();
     targetIter != targetParams.end();
     ++targetIter, ++criticIter) {
-    *targetIter = (TAU * *criticIter).add((1-TAU) * *targetIter);
+    (*targetIter).mul_(1-TAU);
+    (*targetIter).add_(TAU * (*criticIter));
   }
 }
 
