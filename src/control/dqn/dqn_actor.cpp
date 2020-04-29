@@ -7,7 +7,6 @@
 DQNActor::DQNActor(std::shared_ptr<DQN> net) : net(net) {}
 
 Action DQNActor::act(const Observation& o) {
-  //std::cout << net->forward(tensor({.1, .1, .1, .1, .1, -.8, .1, .1042, .1852}).toType(ScalarType::Float).to(DEVICE)) << std::endl;
   Direction d;
   auto explore = (double)rand()/RAND_MAX;
   Tensor ten;

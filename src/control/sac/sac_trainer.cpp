@@ -112,7 +112,7 @@ void SACTrainer::updateTargets(nn::Sequential& target, nn::Sequential& critic) {
 
 nn::Sequential SACTrainer::makeCritic() {
   return nn::Sequential(
-    nn::Linear(9, 128),
+    nn::Linear(6*31+3, 128),
     nn::ReLU(),
     nn::Linear(128, 128),
     nn::ReLU(),

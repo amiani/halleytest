@@ -45,8 +45,7 @@ public:
     auto body = std::make_shared<cp::Body>(config.mass, moment);
     auto randx = 1920 * ((double)rand()/RAND_MAX*2.0-1.0);
     auto randy = 1080 * ((double)rand()/RAND_MAX*2.0-1.0);
-    //body->setPosition(cp::Vect(randx, randy));
-    body->setPosition(cp::Vect(0, 0));
+    body->setPosition(cp::Vect(randx, randy));
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
     shape->setFilter({
       .categories = PLAYERHULL,

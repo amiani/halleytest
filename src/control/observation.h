@@ -26,7 +26,6 @@ struct Observation {
   std::vector<EntityData> detectedBodies;
   //EntityData allies[1];
   torch::Tensor toTensor() const;
-  //static const int dim = 6*31 + 3;
-  static const int dim = 6 + 3;
+  inline static const int dim = 6*31 + 3;
 };
 

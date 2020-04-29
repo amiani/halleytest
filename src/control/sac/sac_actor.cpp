@@ -6,7 +6,7 @@
 
 SACActor::SACActor() {
   net = nn::Sequential(
-    nn::Linear(9, 128),
+    nn::Linear(6*31+3, 128),
     nn::ReLU(),
     nn::Linear(128, 128),
     nn::ReLU(),
@@ -17,8 +17,9 @@ SACActor::SACActor() {
 }
 
 Action SACActor::act(const Observation& o) {
+  std::cout << "act begin\n";
   auto probs = forward(o.toTensor().to(DEVICE));
-  Tensor sample;
+  Tensor sample = torch::eye(1);
   long action;
   if (deterministic) {
     action = probs.argmax().item<long>();
@@ -30,6 +31,7 @@ Action SACActor::act(const Observation& o) {
   if (action == 0) d = LEFT;
   else if (action == 1) d = RIGHT;
   else d = STRAIGHT;
+  std::cout << "act return\n";
   return {
     .throttle = true,
     .fire = false,

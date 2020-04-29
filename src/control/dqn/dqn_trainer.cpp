@@ -5,14 +5,14 @@
 #include "dqn_trainer.h"
 
 DQNTrainer::DQNTrainer()
-  : net1(std::make_shared<DQN>(9, 3)),
-  net2(std::make_shared<DQN>(9, 3)),
+  : net1(std::make_shared<DQN>(Observation::dim, Action::dim)),
+  net2(std::make_shared<DQN>(Observation::dim, Action::dim)),
   optimizer1(net1->parameters(true), optim::AdamOptions(LR)),
   optimizer2(net2->parameters(true), optim::AdamOptions(LR)),
   actor(std::make_shared<DQNActor>(net1)) {
   net1->to(DEVICE);
   net2->to(DEVICE);
-  torch::load(net1, "latestnet.pt");
+  //torch::load(net1, "latestnet.pt");
 }
 
 
