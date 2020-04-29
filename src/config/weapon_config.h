@@ -12,4 +12,6 @@ struct WeaponConfig {
   float radius;
   float mass;
   String projectileImage;
+  float projectileLifetime;
+  float cooldown;
 };

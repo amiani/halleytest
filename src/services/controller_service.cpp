@@ -1,3 +1,4 @@
+#include <src/control/dqn/dqn_trainer.h>
 #include <src/control/sac/sac_trainer.h>
 #include "controller_service.h"
 #include "src/control/controller.h"
@@ -14,8 +15,9 @@ std::shared_ptr<InputController> ControllerService::makeInputController(
 }
 
 std::shared_ptr<RLController> ControllerService::makeRLController() {
-  auto trainer = std::make_unique<SACTrainer>(actorPath, critic1Path, critic2Path);
-  auto c = std::make_shared<RLController>(std::move(trainer), true);
+  auto trainer = std::make_unique<SACTrainer>();
+  auto actor = trainer->getActor();
+  auto c = std::make_shared<RLController>(std::move(trainer), actor, true);
   rlControllers.push_back(c);
   return c;
 }

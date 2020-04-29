@@ -18,6 +18,13 @@ public:
       e.transform2D.setGlobalPosition(chipToHalley(e.body.body->getPosition()));
       e.transform2D.setGlobalRotation(e.body.body->getAngle());
     }
+
+    for (auto& e : lifetimeFamily) {
+      e.lifetime.timeLeft -= time;
+      if (e.lifetime.timeLeft <= 0) {
+        getWorld().destroyEntity(e.entityId);
+      }
+    }
   }
 
   void updateChipmunkObjects() {

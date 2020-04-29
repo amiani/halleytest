@@ -2,7 +2,6 @@
 #include "chipmunk.hpp"
 #include "src/utils.h"
 #include <chrono>
-#include <src/control/sac/sac_trainer.h>
 
 bool Controller::isObserver() {
   return _isObserver;
@@ -50,6 +49,9 @@ const Action& InputController::update(Time t) {
 
 RLController::RLController(std::unique_ptr<Trainer> t, bool train)
   : trainer(std::move(t)), actor(trainer->getActor()), train(train) {}
+
+RLController::RLController(std::unique_ptr<Trainer> t, std::shared_ptr<Actor> actor, bool train)
+  : trainer(std::move(t)), actor(actor), train(train) {}
 
 RLController::RLController(std::shared_ptr<Actor> actor, bool train) : actor(actor), train(train) {}
 

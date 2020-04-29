@@ -5,17 +5,18 @@
 
 class ControlSystem final : public ControlSystemBase<ControlSystem> {
 public:
+  Action lastAction;
   void update(Halley::Time time, MainFamily& e) {
     if (frames % 8 == 0) {
-      if (frames >= 7500) terminal = true;
+      if (frames >= 180) terminal = true;
       auto& action = updateController(time, e, terminal);
       if (terminal) {
         getAPI().core->setStage(std::make_unique<GameStage>());
       } else {
-        applyAction(e, action);
+        lastAction = action;
       }
     }
-    if (go) { e.body.body->applyForceAtLocalPoint(cp::Vect(75, 0), cp::Vect(0, 0)); }
+    applyAction(e, lastAction);
     frames++;
   }
 
@@ -32,6 +33,7 @@ public:
       }
     }
     o.goal = e.goal.position;
+    o.angularVelocity = e.body.body->getAngularVelocity();
     return o;
   }
 
@@ -46,39 +48,45 @@ public:
     };
   }
 
-  double lastDistance = sqrt(200*200+200*200);
+  double lastDistance = -1;
   const Action& updateController(Halley::Time time, MainFamily& e, bool isTerminal) {
     auto body = e.body.body;
     if (e.observer.hasValue()) {
       auto observation = makeObservation(e, isTerminal);
       auto distanceToGoal = cp::Vect::dist(body->getPosition(), e.goal.position);
-      auto reward = e.observer->reward;
-      if (lastDistance - distanceToGoal > 5) {
+      if (lastDistance == -1) lastDistance = distanceToGoal;
+      auto delta = lastDistance - distanceToGoal;
+      //auto distanceReward = -(1.f/1000) * distanceToGoal;
+      //auto reward = e.observer->reward + distanceReward;
+      float reward = 0;
+      if (reachedGoal) reward += 1;
+      if (delta > 7) {
         reward += 1;
-      } else if (lastDistance - distanceToGoal < 5) {
+      } else if (delta < -7) {
         reward -= 1;
       }
       lastDistance = distanceToGoal;
       e.observer->reward = 0;
+      e.observer->totalReward += reward;
       return e.shipControl.controller->update(time, observation, reward);
     } else {
       return e.shipControl.controller->update(time);
     }
   }
 
-  bool go = false;
   void applyAction(MainFamily& e, const Action& a) {
     auto& body = e.body.body;
-    go = a.throttle;
-    /*
     if (a.throttle) {
-      body->applyForceAtLocalPoint(cp::Vect(500, 0), cp::Vect(0, 0));
+      body->applyForceAtLocalPoint(cp::Vect(200, 0), cp::Vect(0, 0));
     }
-    */
-
-    cp::Vect bodyPos = body->getPosition();
-    double angle = cp::Vect::toAngle(a.target - bodyPos);
-    body->setAngle(angle);
+    if (a.direction == LEFT) {
+      body->setTorque(-10000);
+    } else if (a.direction == RIGHT) {
+      body->setTorque(10000);
+    } else {
+      auto damping = -5000*body->getAngularVelocity();
+      body->setTorque(damping);
+    }
 
     if (a.fire && !e.hardpoints.hardpoints.empty()) {
       sendMessage(e.hardpoints.hardpoints.front().weaponId, FireWeaponMessage());
@@ -95,4 +103,5 @@ private:
   bool terminal = false;
   unsigned long long frames = 0;
 };
+
 REGISTER_SYSTEM(ControlSystem)

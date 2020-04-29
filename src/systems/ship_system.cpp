@@ -13,7 +13,7 @@
 #include "components/detector_component.h"
 #include "components/hardpoints_component.h"
 #include "components/shape_component.h"
-//#include "src/config/hardpoint.h"
+#include "components/cooldown_component.h"
 #include "halley/src/engine/entity/include/halley/entity/components/transform_2d_component.h"
 
 using namespace Halley;
@@ -38,13 +38,15 @@ public:
     laserConfig.load(laserNode);
     auto laser = world.createEntity()
       .addComponent(WeaponControlComponent())
+      .addComponent(CooldownComponent(laserConfig.cooldown, 0))
       .addComponent(WeaponComponent(laserConfig));
 
     cp::Float moment = cp::momentForCircle(config.mass, 0, config.radius);
     auto body = std::make_shared<cp::Body>(config.mass, moment);
     auto randx = 1920 * ((double)rand()/RAND_MAX*2.0-1.0);
     auto randy = 1080 * ((double)rand()/RAND_MAX*2.0-1.0);
-    body->setPosition(cp::Vect(randx, randy));
+    //body->setPosition(cp::Vect(randx, randy));
+    body->setPosition(cp::Vect(0, 0));
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
     shape->setFilter({
       .categories = PLAYERHULL,
@@ -67,7 +69,7 @@ public:
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape))
       .addComponent(DetectorComponent(detector, std::vector<Entity*>()))
-      .addComponent(ObserverComponent(0))
+      .addComponent(ObserverComponent(0, 0))
       .addComponent(HealthComponent(100))
       .addComponent(SpriteComponent(sprite, 0, 1))
       .addComponent(HardpointsComponent(std::vector<Hardpoint>{h}))
@@ -92,10 +94,10 @@ public:
     double randx, randy;
     cp::Vect position;
     do {
-      randx = 1920 * ((double)rand()/RAND_MAX*2.0-1.0);
-      randy = 1080 * ((double)rand()/RAND_MAX*2.0-1.0);
-      position = cp::Vect(200*randx, 200*randy);
-    } while(cp::Vect::dist(position, playerPosition) < 100);
+      randx = 1920 * (((double)rand()/RAND_MAX)*2.0-1.0);
+      randy = 1080 * (((double)rand()/RAND_MAX)*2.0-1.0);
+      position = cp::Vect(randx, randy);
+    } while(cp::Vect::dist(position, playerPosition) < 100 || cp::Vect::dist(position, playerPosition) > 400);
     auto body = std::make_shared<cp::Body>(1, 1);
     body->setPosition(position);
     auto shape = std::make_shared<cp::CircleShape>(body, 50);
@@ -106,8 +108,7 @@ public:
     });
     shape->setCollisionType(GOALBODY);
     auto sprite = Sprite()
-      .setImage(getResources(), "target.png")
-      .setPivot(Halley::Vector2f(.5, .5))
+      .setImage(getResources(), "target.png") .setPivot(Halley::Vector2f(.5, .5))
       .scaleTo(Halley::Vector2f(100, 100));
     return getWorld().createEntity("goal")
       .addComponent(BodyComponent(body))

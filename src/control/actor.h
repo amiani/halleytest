@@ -8,11 +8,6 @@
 
 class Actor {
 public:
-  Actor(String path);
-  Actor(torch::jit::script::Module module);
+  Actor() {};
   virtual Action act(const Observation& o) =0;
-  torch::jit::script::Module& getModule() { return module; }
-
-protected:
-  torch::jit::script::Module module;
 };

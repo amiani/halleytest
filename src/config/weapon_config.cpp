@@ -11,4 +11,6 @@ void WeaponConfig::load(const ConfigNode& node) {
   radius = node["radius"].asFloat();
   mass = node["mass"].asFloat();
   projectileImage = node["projectileImage"].asString();
+  projectileLifetime = node["projectileLifetime"].asFloat();
+  cooldown = node["cooldown"].asFloat();
 }

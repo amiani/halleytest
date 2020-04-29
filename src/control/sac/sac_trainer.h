@@ -1,46 +1,41 @@
 //
-// Created by amiani on 4/20/20.
+// Created by amiani on 4/28/20.
 //
 
 #pragma once
 
 
 #include <src/control/trainer.h>
-#include "sacactor.h"
-#include "replay_buffer.h"
-#include "src/control/action.h"
+#include "src/control/replay_buffer.h"
+#include "sac_actor.h"
 
 using namespace torch;
 
-class SACTrainer : public Trainer {
+class SACTrainer : public Trainer{
 public:
-  SACTrainer(String actorPath, String critic1Path, String critic2Path);
+  SACTrainer();
   void addStep(Observation& o, Action& a, float r);
   void improve() override;
-  void improveContinuous();
+  std::shared_ptr<Actor> getActor() override { return actor; }
 
 private:
   static const float GAMMA;
   static const float TAU;
-  static const float TEMP;
-  double LR = 1e-4;
+  double LR = 3e-4;
+  Tensor logTemp;
+  Tensor temp;
+  float entropyTarget = .7 * -log(1.f / 3);
 
-  jit::Module critic1;
-  jit::Module critic2;
-  jit::Module critic1Target;
-  jit::Module critic2Target;
-  std::vector<Tensor> actorParameters;
-  std::vector<Tensor> critic1Parameters;
-  std::vector<Tensor> critic2Parameters;
-  std::vector<Tensor> critic1TargetParameters;
-  std::vector<Tensor> critic2TargetParameters;
-  std::unique_ptr<optim::Optimizer> actorOptimizer;
-  std::unique_ptr<optim::Optimizer> critic1Optimizer;
-  std::unique_ptr<optim::Optimizer> critic2Optimizer;
+  std::shared_ptr<SACActor> actor;
+  nn::Sequential critic1, critic2, target1, target2;
+  optim::Adam actorOptimizer, critic1Optimizer, critic2Optimizer, tempOptimizer;
 
   ReplayBuffer replayBuffer;
 
-  static jit::Module cloneModule(jit::Module);
-  static void updateTargetParameters(std::vector<Tensor>&, std::vector<Tensor>&);
+  void updateCritics(Batch& batch);
+  Tensor updateActor(Batch& batch);
+  void updateTemp(Tensor& logpi);
+  void updateTargets(nn::Sequential& target, nn::Sequential& critic);
+  nn::Sequential makeCritic();
 };
 

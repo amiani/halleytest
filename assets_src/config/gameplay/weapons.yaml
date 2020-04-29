@@ -4,5 +4,7 @@ weapons:
     radius: 1
     mass: .01
     damping: 0
+    projectileLifetime: 4
+    cooldown: .2
 
 ...

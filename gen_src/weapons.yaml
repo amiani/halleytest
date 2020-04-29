@@ -18,6 +18,14 @@ component:
 ---
 
 component:
+  name: Cooldown
+  members:
+    - length: float
+    - timeLeft: float
+
+---
+
+component:
   name: Hardpoints
   members:
   - hardpoints: std::vector<Hardpoint>

@@ -21,6 +21,7 @@ component:
   name: Observer
   members:
   - reward: float
+  - totalReward: float
 
 ---
 
@@ -75,6 +76,7 @@ system:
     - main:
       - Weapon: read
       - Transform2D: write
+      - Cooldown: write
   strategy: individual
   messages:
     - FireWeapon: receive

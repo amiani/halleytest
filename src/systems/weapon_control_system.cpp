@@ -2,6 +2,7 @@
 #include "components/body_component.h"
 #include "components/shape_component.h"
 #include "components/sprite_component.h"
+#include "components/lifetime_component.h"
 #include "halley/src/engine/entity/include/halley/entity/components/transform_2d_component.h"
 #include "chipmunk.hpp"
 #include "src/utils.h"
@@ -9,6 +10,7 @@
 class WeaponControlSystem : public WeaponControlSystemBase<WeaponControlSystem> {
 public:
   void update(Time t, MainFamily& e) {
+    if (e.cooldown.timeLeft > 0)  e.cooldown.timeLeft -= t;
   }
 
   void onMessageReceived(const FireWeaponMessage& msg, MainFamily& e) {
@@ -16,6 +18,11 @@ public:
   }
 
   void shoot(MainFamily& e) {
+    if (e.cooldown.timeLeft > 0) {
+      return;
+    }
+    e.cooldown.timeLeft = e.cooldown.length;
+
     float mass = e.weapon.config.mass;
     float radius = e.weapon.config.radius;
     float inertia = cp::momentForCircle(mass, 0, radius, cp::Vect(0, 0));
@@ -42,6 +49,7 @@ public:
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape))
       .addComponent(Transform2DComponent())
+      .addComponent(LifetimeComponent(e.weapon.config.projectileLifetime))
       .addComponent(SpriteComponent(sprite, 0, 1));
   }
 };

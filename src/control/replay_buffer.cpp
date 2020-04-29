@@ -3,7 +3,7 @@
 //
 
 #include <src/utils.h>
-#include "replay_buffer.h"
+#include "src/control/replay_buffer.h"
 
 Batch ReplayBuffer::sample(int size) {
   std::vector<Tensor> o;
@@ -27,6 +27,8 @@ Batch ReplayBuffer::sample(int size) {
       } else {
         d.push_back(0);
       }
+    } else {
+      --i;
     }
   }
 
@@ -34,26 +36,26 @@ Batch ReplayBuffer::sample(int size) {
   auto action = stack(a).to(DEVICE);
   auto reward = torch::from_blob(r.data(), {r.size()}).to(DEVICE);
   auto nextObservation = stack(n).to(DEVICE);
-  auto done = torch::from_blob(d.data(), {d.size()}).to(DEVICE);
+  auto done = torch::from_blob(d.data(), {d.size()}, TensorOptions().dtype(ScalarType::Int)).to(DEVICE);
   return {
-    observation,
-    action,
-    reward,
-    nextObservation,
-    done
+    observation.clone(),
+    action.clone(),
+    reward.clone(),
+    nextObservation.clone(),
+    done.clone()
   };
 }
 
 Step lastStep;
 void ReplayBuffer::addStep(Observation o, Action a, float r) {
-  if (size_ > 200000) {
+  if (size_ > 20000) {
     size_ -= trajectories.begin()->size();
     trajectories.erase(trajectories.begin());
   }
   if (size_ > 0) {
     lastStep.reward = r;
     trajectories.back().push_back(lastStep);
-    if (o.terminal) {
+    if (lastStep.observation.terminal) {
       trajectories.push_back(Trajectory());
     }
   }

@@ -38,6 +38,13 @@ component:
 
 ---
 
+component:
+  name: Lifetime
+  members:
+    - timeLeft: float
+
+---
+
 message:
   name: Hit
   members:
@@ -64,6 +71,8 @@ system:
     - Transform2D: write
   - detectors:
     - Detector: write
+  - lifetime:
+      - Lifetime: write
   strategy: global
   access:
   - world

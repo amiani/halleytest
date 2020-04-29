@@ -39,6 +39,7 @@ private:
 class RLController : public Controller {
 public:
   RLController(std::unique_ptr<Trainer>, bool train = true);
+  RLController(std::unique_ptr<Trainer>, std::shared_ptr<Actor> actor, bool train = true);
   RLController(std::shared_ptr<Actor>, bool train = true);
   const Action& update(Halley::Time t, Observation o, float r) override;
   const Action& update(Halley::Time t) override;
@@ -46,6 +47,5 @@ public:
 private:
   bool train;
   std::unique_ptr<Trainer> trainer;
-  //std::shared_ptr<Actor> actor;
   std::shared_ptr<Actor> actor;
 };

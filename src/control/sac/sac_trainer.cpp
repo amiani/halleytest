@@ -1,35 +1,35 @@
 //
-// Created by amiani on 4/20/20.
+// Created by amiani on 4/28/20.
 //
 
 #include "sac_trainer.h"
 
-SACTrainer::SACTrainer(String actorPath, String critic1Path, String critic2Path)
-  : Trainer(std::make_shared<SACActor>(actorPath)),
-    critic1(jit::load(critic1Path)),
-    critic2(jit::load(critic2Path)),
-    critic1Target(cloneModule(critic1)),
-    critic2Target(cloneModule(critic2)),
-    actorParameters(getModuleParameters(actor->getModule())),
-    critic1Parameters(getModuleParameters(critic1)),
-    critic2Parameters(getModuleParameters(critic2)),
-    actorOptimizer(std::make_unique<optim::Adam>(actorParameters, optim::AdamOptions(LR))),
-    critic1Optimizer(std::make_unique<optim::Adam>(critic1Parameters, optim::AdamOptions(LR))),
-    critic2Optimizer(std::make_unique<optim::Adam>(critic2Parameters, optim::AdamOptions(LR)))
-{
-  critic1.to(DEVICE);
-  critic2.to(DEVICE);
-  critic1Target.to(DEVICE);
-  critic2Target.to(DEVICE);
-  critic1TargetParameters = getModuleParameters(critic1Target);
-  critic2TargetParameters = getModuleParameters(critic2Target);
-  for (auto& p : critic1TargetParameters) {
-    p.requires_grad_(false);
-  }
-  for (auto& p : critic2TargetParameters) {
-    p.requires_grad_(false);
-  }
+SACTrainer::SACTrainer()
+  : actor(std::make_shared<SACActor>()),
+  critic1(makeCritic()),
+  critic2(makeCritic()),
+  target1(makeCritic()),
+  target2(makeCritic()),
+  logTemp(tensor(log(1), TensorOptions(DEVICE))),
+  temp(tensor(1, TensorOptions(DEVICE))),
+  actorOptimizer(actor->getNet()->parameters(), optim::AdamOptions(LR)),
+  critic1Optimizer(critic1->parameters(true), optim::AdamOptions(LR)),
+  critic2Optimizer(critic2->parameters(true), optim::AdamOptions(LR)),
+  tempOptimizer({logTemp}, optim::AdamOptions(LR)) {
+
+  logTemp.requires_grad_(true);
+  critic1->to(DEVICE);
+  critic2->to(DEVICE);
+  save(critic1, "temp");
+  load(target1, "temp");
+  save(critic2, "temp");
+  load(target2, "temp");
+  target1->to(DEVICE);
+  target2->to(DEVICE);
+  for (auto& p : target1->parameters(true)) { p.requires_grad_(false); }
+  for (auto& p : target2->parameters(true)) { p.requires_grad_(false); }
 }
+
 
 void SACTrainer::addStep(Observation& o, Action& a, float r) {
   replayBuffer.addStep(o, a, r);
@@ -38,131 +38,86 @@ void SACTrainer::addStep(Observation& o, Action& a, float r) {
   }
 }
 
-int frames = 0;
+unsigned long long improvements = 0;
 void SACTrainer::improve() {
   auto batch = replayBuffer.sample(256);
-  auto reward = batch.reward;
-
-  auto indices = batch.action.toType(torch::kLong);
-  auto q1 = critic1.forward({batch.observation}).toTensor().gather(1, indices);
-  auto q2 = critic2.forward({batch.observation}).toTensor().gather(1, indices);
-
-  auto nextPi = actor->getModule().forward({batch.next}).toTensor();
-  auto nextLogProb = nextPi.log();
-  auto nextQ1 = critic1Target.forward({batch.next}).toTensor();
-  auto nextQ2 = critic2Target.forward({batch.next}).toTensor();
-  auto minNextQ = torch::min(nextQ1, nextQ2);
-  auto nextV = (nextPi * (minNextQ - TEMP * nextLogProb)).mean({1});
-  auto target = (reward + GAMMA * (1 - batch.done) * nextV).detach();
-
-  auto critic1Loss = mse_loss(q1, target);
-  auto critic2Loss = mse_loss(q2, target);
-  critic1Optimizer->zero_grad();
-  critic2Optimizer->zero_grad();
-  critic1Loss.backward();
-  critic2Loss.backward();
-  critic1Optimizer->step();
-  critic2Optimizer->step();
-
-  auto pi = actor->getModule().forward({batch.observation}).toTensor();
-  auto logProb = pi.log();
-  q1 = critic1.forward({batch.observation}).toTensor();
-  q2 = critic2.forward({batch.observation}).toTensor();
-  auto minQ = torch::min(q1, q2);
-  auto actorLoss = (pi * (TEMP * logProb - minQ)).sum({1}).mean();
-  actorOptimizer->zero_grad();
-  actorLoss.backward();
-  actorOptimizer->step();
-
-  updateTargetParameters(critic1TargetParameters, critic1Parameters);
-  updateTargetParameters(critic2TargetParameters, critic2Parameters);
-
-  if (frames % 1000 == 0) {
-    std::cout << "\ncritic1 loss: " << critic1Loss.item<float>() << std::endl;
-    std::cout << "actor loss: " << actorLoss.item<float>() << std::endl;
-    replayBuffer.printMeanReturn(5);
-
-    actor->getModule().save("latestactor.pt");
-    critic1.save("latestcritic1.pt");
-    critic2.save("latestcritic2.pt");
-    critic1Target.save("latestcritic1target.pt");
-    critic2Target.save("latestcritic2target.pt");
+  updateCritics(batch);
+  auto pi = updateActor(batch);
+  updateTemp(pi);
+  updateTargets(target1, critic1);
+  updateTargets(target2, critic2);
+  if (improvements % 1000 == 0) {
+    std::cout << "temp: " << temp.item<float>() << std::endl;
+    replayBuffer.printMeanReturn(20);
+    save(actor->getNet(), "latestactor.pt");
   }
-  frames++;
+  ++improvements;
 }
 
-void SACTrainer::improveContinuous() {
-  auto batch = replayBuffer.sample(256);
-  auto reward = batch.reward.unsqueeze(1);
-
-  auto obsAction = cat({batch.observation, batch.action}, 1);
-  auto q1 = critic1.forward({obsAction}).toTensor();
-  auto q2 = critic2.forward({obsAction}).toTensor();
-
-  auto deterministic = torch::zeros({1});
-  auto nextActionSample = actor->getModule().forward({batch.next, deterministic}).toTuple()->elements();
-  auto nextSampledAction = cat({batch.next, nextActionSample[0].toTensor().unsqueeze(1)}, 1);
-  auto nextQ1 = critic1Target.forward({nextSampledAction}).toTensor();
-  auto nextQ2 = critic2Target.forward({nextSampledAction}).toTensor();
-  auto nextQ = torch::min(nextQ1, nextQ2);
-  auto nextLogProb = nextActionSample[1].toTensor().unsqueeze(1);
-  auto target = reward + GAMMA * (1 - batch.done) * (nextQ - TEMP * nextLogProb).detach();
-
-  auto critic1Loss = mse_loss(q1, target);
-  auto critic2Loss = mse_loss(q2, target);
-  critic1Optimizer->zero_grad();
-  critic2Optimizer->zero_grad();
-  critic1Loss.backward();
-  critic2Loss.backward();
-  critic1Optimizer->step();
-  critic2Optimizer->step();
-
-  auto actionSample = actor->getModule().forward({batch.observation, deterministic}).toTuple()->elements();
-  auto obsSampledAction = cat({batch.observation, actionSample[0].toTensor().unsqueeze(1)}, 1);
-  auto obsSampledActionQ1 = critic1.forward({obsSampledAction}).toTensor();
-  auto obsSampledActionQ2 = critic2.forward({obsSampledAction}).toTensor();
-  auto obsSampledActionMinValue = torch::min(obsSampledActionQ1, obsSampledActionQ2).squeeze();
-  auto logProbs = actionSample[1].toTensor();
-  auto actorLoss = (TEMP * logProbs - obsSampledActionMinValue).mean();
-  actorOptimizer->zero_grad();
-  actorLoss.backward();
-  actorOptimizer->step();
-
-  updateTargetParameters(critic1TargetParameters, critic1Parameters);
-  updateTargetParameters(critic2TargetParameters, critic2Parameters);
-
-  if (frames % 1000 == 0) {
-    std::cout << "\ncritic1 loss: " << critic1Loss.item<float>() << std::endl;
-    std::cout << "actor loss: " << actorLoss.item<float>() << std::endl;
-    replayBuffer.printMeanReturn(5);
-
-    actor->getModule().save("latestactor.pt");
-    critic1.save("latestcritic1.pt");
-    critic2.save("latestcritic2.pt");
-    critic1Target.save("latestcritic1target.pt");
-    critic2Target.save("latestcritic2target.pt");
+void SACTrainer::updateCritics(Batch& batch) {
+  Tensor target;
+  {
+    NoGradGuard guard;
+    auto pi = actor->forward(batch.next);
+    auto qnext1 = target1->forward(batch.next);
+    auto qnext2 = target2->forward(batch.next);
+    auto minqnext = torch::min(qnext1, qnext2);
+    auto vnext = sum(pi * (minqnext - temp * pi.log()), {1});
+    target = batch.reward + GAMMA * (1 - batch.done) * vnext;
   }
-  frames++;
+
+  auto q1 = critic1->forward(batch.observation).gather(1, batch.action).squeeze();
+  auto q2 = critic2->forward(batch.observation).gather(1, batch.action).squeeze();
+  auto loss1 = mse_loss(q1, target);
+  auto loss2 = mse_loss(q2, target);
+
+  critic1Optimizer.zero_grad();
+  loss1.backward();
+  critic1Optimizer.step();
+  critic2Optimizer.zero_grad();
+  loss2.backward();
+  critic2Optimizer.step();
 }
 
-jit::Module SACTrainer::cloneModule(jit::Module module) {
-  std::stringstream stream;
-  module.save(stream);
-  stream.seekg(0, std::ios::beg);
-  return jit::load(stream);
+Tensor SACTrainer::updateActor(Batch& batch) {
+  auto pi = actor->forward(batch.observation);
+  auto q1 = critic1->forward(batch.observation);
+  auto q2 = critic2->forward(batch.observation);
+  auto minq = torch::min(q1, q2);
+  auto loss = (pi * (temp * pi.log() - minq)).sum({1}).mean();
+  actorOptimizer.zero_grad();
+  loss.backward();
+  actorOptimizer.step();
+  return pi;
 }
 
-void SACTrainer::updateTargetParameters(std::vector<Tensor>& targetParams, std::vector<Tensor>& criticParams) {
-  if (targetParams.size() != criticParams.size()) std::cout << "TARGET NOT SAME SIZE AS CRITIC\n";
-  for (
-    auto targetIter = targetParams.begin(), criticIter = criticParams.begin();
-    targetIter != targetParams.end();
-    ++targetIter, ++criticIter) {
-    (*targetIter).mul_(1-TAU);
-    (*targetIter).add_(TAU * (*criticIter));
+void SACTrainer::updateTemp(Tensor& pi) {
+  auto loss = (-logTemp * (sum(pi * pi.log(), {1}).detach() + entropyTarget)).mean();
+  tempOptimizer.zero_grad();
+  loss.backward();
+  tempOptimizer.step();
+  temp = logTemp.exp();
+}
+
+void SACTrainer::updateTargets(nn::Sequential& target, nn::Sequential& critic) {
+  auto targetParameters = target->parameters(true);
+  auto criticParameters = critic->parameters(true);
+  for (auto targetParam = targetParameters.begin(), criticParam = criticParameters.begin();
+    targetParam != targetParameters.end();
+    ++targetParam, ++criticParam) {
+    targetParam->mul_(1-TAU);
+    targetParam->add_(TAU * *criticParam);
   }
+}
+
+nn::Sequential SACTrainer::makeCritic() {
+  return nn::Sequential(
+    nn::Linear(9, 128),
+    nn::ReLU(),
+    nn::Linear(128, 128),
+    nn::ReLU(),
+    nn::Linear(128, 3));
 }
 
 const float SACTrainer::GAMMA = .99;
 const float SACTrainer::TAU = .005;
-const float SACTrainer::TEMP = .1;

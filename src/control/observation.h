@@ -20,11 +20,13 @@ struct EntityData {
 struct Observation {
   bool terminal;
   cp::Vect goal;
+  float angularVelocity;
   EntityData self;
   //EntityData enemies[1];
   std::vector<EntityData> detectedBodies;
   //EntityData allies[1];
   torch::Tensor toTensor() const;
-  static const int dim = 6*31 + 2;
+  //static const int dim = 6*31 + 3;
+  static const int dim = 6 + 3;
 };
 
