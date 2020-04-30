@@ -1,3 +1,4 @@
+#include <any>
 #include "systems/physics_system.h"
 #include "chipmunk.hpp"
 #include "src/utils.h"
@@ -48,8 +49,7 @@ public:
 
   void onEntitiesAdded(Halley::Span<PhysicalFamily> es) {
     for (auto& e : es) {
-      auto entity = getWorld().tryGetEntity(e.entityId);
-      e.body.body->setUserData(reinterpret_cast<cp::DataPointer>(entity));
+      e.body.body->userData = e.entityId;
       bodiesToAdd.push_back(e.body.body);
       shapesToAdd.push_back(e.shape.shape);
       if (e.detector.hasValue()) {
@@ -69,46 +69,46 @@ public:
   }
 
   void addCollisionHandlers() {
-    space.addBeginCollisionHandler(PROJECTILEBODY, [this](cp::Arbiter arb, auto& s) {
-      auto laser = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
-      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
-      getWorld().destroyEntity(laser->getEntityId());
-      sendMessage(other->getEntityId(), HitMessage(10));
+    space.addBeginCollisionHandler(PROJECTILEBODY, [this](cp::Arbiter arb, cp::Space& s) {
+      auto laser = std::any_cast<Halley::EntityId>(arb.getBodyA().userData);
+      auto other = std::any_cast<Halley::EntityId>(arb.getBodyB().userData);
+      getWorld().destroyEntity(laser);
+      sendMessage(other, HitMessage(10));
       return false;
     });
 
     space.addBeginCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
-      auto detector = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
-      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
+      auto detector = getEntity(arb.getBodyA());
+      auto otherId = std::any_cast<Halley::EntityId>(arb.getBodyB().userData);
       auto& detectorComp = detector->getComponent<DetectorComponent>();
-      detectorComp.entities.push_back(other);
+      detectorComp.entities.push_back(otherId);
       return false;
     });
 
     space.addSeparateCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
-      auto detector = reinterpret_cast<Halley::Entity*>(arb.getBodyA().getUserData());
-      auto other = reinterpret_cast<Halley::Entity*>(arb.getBodyB().getUserData());
+      auto detector = getEntity(arb.getBodyA());
+      auto otherId = std::any_cast<Halley::EntityId>(arb.getBodyB().userData);
       auto& es = detector->getComponent<DetectorComponent>().entities;
-      es.erase(std::remove(es.begin(), es.end(), other), es.end());
+      es.erase(std::remove(es.begin(), es.end(), otherId), es.end());
     });
 
     space.addBeginCollisionHandler(GOALBODY, PLAYERSHIPBODY, [this](cp::Arbiter arb, auto& s) {
-      auto playerBody = arb.getBodyB();
-      auto player = getEntity(playerBody);
-      sendMessage(player->getEntityId(), ReachedGoalMessage());
+      auto playerId = std::any_cast<Halley::EntityId>(arb.getBodyB().userData);
+      sendMessage(playerId, ReachedGoalMessage());
       std::cout << "reached goal!!!\n";
       return false;
     });
 
     space.addPostSolveCollisionHandler(PLAYERSHIPBODY, [this](cp::Arbiter arb, auto& s) {
-      auto player = getEntity(arb.getBodyA());
+      auto playerId = std::any_cast<Halley::EntityId>(arb.getBodyA().userData);
       auto ke = arb.totalKineticEnergy();
-      sendMessage(player->getEntityId(), ImpactMessage(ke));
+      sendMessage(playerId, ImpactMessage(ke));
     });
   }
 
   Halley::Entity* getEntity(const cp::Body& body) {
-    return reinterpret_cast<Halley::Entity*>(body.getUserData());
+    auto id = std::any_cast<Halley::EntityId>(body.userData);
+    return getWorld().tryGetEntity(id);
   }
 
   void addBoundaries() {

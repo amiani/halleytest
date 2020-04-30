@@ -34,7 +34,7 @@ component:
   name: Detector
   members:
   - shape: std::shared_ptr<cp::Shape>
-  - entities: std::vector<Halley::Entity*>
+  - entities: std::vector<Halley::EntityId>
 
 ---
 

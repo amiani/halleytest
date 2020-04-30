@@ -67,6 +67,7 @@ system:
     - ReachedGoal: receive
   access:
   - api
+  - world
 
 ---
 

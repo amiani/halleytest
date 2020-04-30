@@ -24,7 +24,8 @@ public:
     auto o = Observation();
     o.terminal = isTerminal;
     o.self = makeEntityData(*e.body.body, e.health.health);
-    for (auto& other : e.detector.entities) {
+    for (auto& id : e.detector.entities) {
+      auto other = getWorld().tryGetEntity(id);
       if (other->isAlive()) {
         auto& bodyComponent = other->getComponent<BodyComponent>();
         auto& body = bodyComponent.body;
@@ -38,8 +39,6 @@ public:
   }
 
   EntityData makeEntityData(cp::Body& body, int health) {
-    auto e = (Halley::Entity*)body.getUserData();
-    auto eId = e->getEntityId().toString();
     return {
       .position = body.getPosition(),
       .rotation = body.getAngle(),

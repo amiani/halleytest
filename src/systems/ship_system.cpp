@@ -51,6 +51,7 @@ public:
       .categories = PLAYERHULL,
       .mask = GOAL | ASTEROID });
     shape->setCollisionType(PLAYERSHIPBODY);
+    body->setVelocityUpdateFunc(velocityUpdate);
     auto detector = std::make_shared<cp::CircleShape>(body, config.detectorRadius);
     detector->setFilter({
       .categories = PLAYERDETECTOR,
@@ -67,7 +68,7 @@ public:
     auto& ship = world.createEntity()
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape))
-      .addComponent(DetectorComponent(detector, std::vector<Entity*>()))
+      .addComponent(DetectorComponent(detector, std::vector<EntityId>()))
       .addComponent(ObserverComponent(0, 0))
       .addComponent(HealthComponent(100))
       .addComponent(SpriteComponent(sprite, 0, 1))
@@ -78,6 +79,10 @@ public:
     laser.addComponent(Transform2DComponent(ship.getComponent<Transform2DComponent>(), Vector2f(25, 0)));
     return ship;
   }
+
+  std::function<void(cp::Body&, cp::Vect, cp::Float, cp::Float)> velocityUpdate = [](cp::Body& body, cp::Vect gravity, cp::Float damping, cp::Float dt) {
+    body.updateVelocity(gravity, damping, dt);
+  };
 
   EntityRef spawnPlayerShip(const ShipConfig& config) {
     auto ship = spawnShip(config);
