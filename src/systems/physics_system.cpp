@@ -6,7 +6,6 @@
 class PhysicsSystem final : public PhysicsSystemBase<PhysicsSystem> {
 public:
   void init() {
-    space.setDamping(.6);
     addCollisionHandlers();
     addBoundaries();
   }

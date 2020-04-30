@@ -81,15 +81,15 @@ public:
   }
 
   std::function<void(cp::Body&, cp::Vect, cp::Float, cp::Float)> velocityUpdate = [](cp::Body& body, cp::Vect gravity, cp::Float damping, cp::Float dt) {
-    body.updateVelocity(gravity, damping, dt);
+    body.updateVelocity(gravity, .99, dt);
   };
 
   EntityRef spawnPlayerShip(const ShipConfig& config) {
     auto ship = spawnShip(config);
     auto& device = inputService->getInput();
     auto& transform = ship.getComponent<Transform2DComponent>();
-    //auto c = controllerService->makeInputController(device, transform);
-    auto c = controllerService->getRLController();
+    auto c = controllerService->makeInputController(device, transform);
+    //auto c = controllerService->getRLController();
     ship.addComponent(ShipControlComponent(c));
     return ship;
   }
