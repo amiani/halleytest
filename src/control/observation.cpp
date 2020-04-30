@@ -33,7 +33,6 @@ torch::Tensor Observation::toTensor() const {
   std::array<float, dim> blob;
   blob.fill(0);
 
-  std::cout << "detectedBodies: " << detectedBodies.size() << std::endl;
   auto selfBlob = self.normalize().toBlob();
   std::copy(selfBlob.begin(), selfBlob.end(), blob.begin());
   for (int i = 0; i != 30, i != detectedBodies.size(); ++i) {

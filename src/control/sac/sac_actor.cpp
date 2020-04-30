@@ -17,7 +17,6 @@ SACActor::SACActor() {
 }
 
 Action SACActor::act(const Observation& o) {
-  std::cout << "act begin\n";
   auto probs = forward(o.toTensor().to(DEVICE));
   Tensor sample = torch::eye(1);
   long action;
@@ -31,7 +30,6 @@ Action SACActor::act(const Observation& o) {
   if (action == 0) d = LEFT;
   else if (action == 1) d = RIGHT;
   else d = STRAIGHT;
-  std::cout << "act return\n";
   return {
     .throttle = true,
     .fire = false,
