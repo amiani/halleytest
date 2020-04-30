@@ -14,4 +14,5 @@ struct WeaponConfig {
   String projectileImage;
   float projectileLifetime;
   float cooldown;
+  int speed;
 };

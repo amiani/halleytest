@@ -6,5 +6,6 @@ weapons:
     damping: 0
     projectileLifetime: 4
     cooldown: .2
+    speed: 750
 
 ...

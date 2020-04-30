@@ -23,33 +23,33 @@ public:
     }
     e.cooldown.timeLeft = e.cooldown.length;
 
-    float mass = e.weapon.config.mass;
-    float radius = e.weapon.config.radius;
-    float inertia = cp::momentForCircle(mass, 0, radius, cp::Vect(0, 0));
+    auto& config = e.weapon.config;
+
+    float inertia = cp::momentForCircle(config.mass, 0, config.radius, cp::Vect(0, 0));
     auto p  = e.transform2D.getGlobalPosition();
     auto r = e.transform2D.getGlobalRotation();
 
-    auto body = std::make_shared<cp::Body>(mass, inertia);
+    auto body = std::make_shared<cp::Body>(config.mass, inertia);
     body->setPosition(cp::Vect(p.x, p.y));
     body->setAngle(r.getRadians());
     float y, x;
     r.sincos(y, x);
-    body->setVelocity(cp::Vect(x, y) * 500);
+    body->setVelocity(cp::Vect(x, y) * config.speed);
 
-    auto shape = std::make_shared<cp::CircleShape>(body, radius);
+    auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
     shape->setCollisionType(PROJECTILEBODY);
     shape->setFilter({
       .categories = PLAYERPROJECTILE,
       .mask = ASTEROID });
 
     auto sprite = Sprite()
-      .setImage(getResources(), e.weapon.config.projectileImage);
+      .setImage(getResources(), config.projectileImage);
 
     getWorld().createEntity()
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape))
       .addComponent(Transform2DComponent())
-      .addComponent(LifetimeComponent(e.weapon.config.projectileLifetime))
+      .addComponent(LifetimeComponent(config.projectileLifetime))
       .addComponent(SpriteComponent(sprite, 0, 1));
   }
 };
