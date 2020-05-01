@@ -10,7 +10,6 @@ public:
   ControllerService(String, String, String);
   std::shared_ptr<InputController> makeInputController(InputVirtual& device, Transform2DComponent& cameraTransform);
   std::shared_ptr<RLController> makeRLController();
-  Controller& getController(int id);
 
 private:
   String actorPath, critic1Path, critic2Path;

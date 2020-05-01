@@ -20,7 +20,3 @@ std::shared_ptr<RLController> ControllerService::makeRLController() {
   rlControllers.push_back(c);
   return c;
 }
-
-Controller& ControllerService::getController(int id) {
-  return *controllers[id];
-}
