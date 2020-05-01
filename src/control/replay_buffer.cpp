@@ -46,7 +46,6 @@ Batch ReplayBuffer::sample(int size) {
   };
 }
 
-Step lastStep;
 void ReplayBuffer::addStep(Observation o, Action a, float r) {
   if (size_ > 200000) {
     size_ -= (*trajectories.begin())->size();
