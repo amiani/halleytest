@@ -25,7 +25,7 @@ public:
     o.terminal = isTerminal;
     for (auto& id : e.detector.entities) {
       auto other = getWorld().tryGetEntity(id);
-      if (other->isAlive()) {
+      if (other && other->isAlive()) {
         auto& bodyComponent = other->getComponent<BodyComponent>();
         auto& body = *bodyComponent.body;
         //auto health = other->getComponent<HealthComponent>().health;

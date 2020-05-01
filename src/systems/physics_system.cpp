@@ -69,45 +69,43 @@ public:
 
   void addCollisionHandlers() {
     space.addBeginCollisionHandler(PROJECTILEBODY, [this](cp::Arbiter arb, cp::Space& s) {
-      auto laser = std::any_cast<Halley::EntityId>(arb.getBodyA().userData);
-      auto other = std::any_cast<Halley::EntityId>(arb.getBodyB().userData);
+      auto laser = getId(arb.getBodyA());
+      auto other = getId(arb.getBodyB());
       getWorld().destroyEntity(laser);
       sendMessage(other, HitMessage(10));
       return false;
     });
 
     space.addBeginCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
-      auto detector = getEntity(arb.getBodyA());
-      auto otherId = std::any_cast<Halley::EntityId>(arb.getBodyB().userData);
-      auto& detectorComp = detector->getComponent<DetectorComponent>();
-      detectorComp.entities.push_back(otherId);
+      auto detector = getId(arb.getBodyA());
+      auto other = getId(arb.getBodyB());
+      sendMessage(detector, DetectMessage(other, true));
       return false;
     });
 
     space.addSeparateCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
-      auto detector = getEntity(arb.getBodyA());
-      auto otherId = std::any_cast<Halley::EntityId>(arb.getBodyB().userData);
-      auto& es = detector->getComponent<DetectorComponent>().entities;
-      es.erase(std::remove(es.begin(), es.end(), otherId), es.end());
+      auto detector = getId(arb.getBodyA());
+      auto other = getId(arb.getBodyB());
+      //std::cout << "separate: " << otherId.toString() << std::endl;
+      sendMessage(detector, DetectMessage(other, false));
     });
 
     space.addBeginCollisionHandler(GOALBODY, PLAYERSHIPBODY, [this](cp::Arbiter arb, auto& s) {
-      auto playerId = std::any_cast<Halley::EntityId>(arb.getBodyB().userData);
-      sendMessage(playerId, ReachedGoalMessage());
+      auto player = getId(arb.getBodyB());
+      sendMessage(player, ReachedGoalMessage());
       std::cout << "reached goal!!!\n";
       return false;
     });
 
     space.addPostSolveCollisionHandler(PLAYERSHIPBODY, [this](cp::Arbiter arb, auto& s) {
-      auto playerId = std::any_cast<Halley::EntityId>(arb.getBodyA().userData);
+      auto player = getId(arb.getBodyA());
       auto ke = arb.totalKineticEnergy();
-      sendMessage(playerId, ImpactMessage(ke));
+      sendMessage(player, ImpactMessage(ke));
     });
   }
 
-  Halley::Entity* getEntity(const cp::Body& body) {
-    auto id = std::any_cast<Halley::EntityId>(body.userData);
-    return getWorld().tryGetEntity(id);
+  Halley::EntityId getId(const cp::Body& body) {
+    return std::any_cast<Halley::EntityId>(body.userData);
   }
 
   void addBoundaries() {

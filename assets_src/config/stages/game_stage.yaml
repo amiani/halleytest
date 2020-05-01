@@ -5,6 +5,7 @@ timelines:
   - Asteroid
   - Ship
   - DefensiveStat
+  - Detection
   - Control
   - Physics
 

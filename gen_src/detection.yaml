@@ -1,0 +1,24 @@
+component:
+  name: Detector
+  members:
+    - shape: std::shared_ptr<cp::Shape>
+    - entities: std::vector<Halley::EntityId>
+
+---
+
+message:
+  name: Detect
+  members:
+    - id: Halley::EntityId
+    - detected: bool
+
+---
+
+system:
+  name: Detection
+  families:
+  - main:
+    - Detector: write
+  strategy: global
+  messages:
+    - Detect: receive

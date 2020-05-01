@@ -30,13 +30,6 @@ component:
 
 ---
 
-component:
-  name: Detector
-  members:
-  - shape: std::shared_ptr<cp::Shape>
-  - entities: std::vector<Halley::EntityId>
-
----
 
 component:
   name: Lifetime
@@ -69,8 +62,6 @@ system:
   - bodies:
     - Body: read
     - Transform2D: write
-  - detectors:
-    - Detector: write
   - lifetime:
       - Lifetime: write
   strategy: global
@@ -80,3 +71,4 @@ system:
   - Hit: send
   - Impact: send
   - ReachedGoal: send
+  - Detect: send
