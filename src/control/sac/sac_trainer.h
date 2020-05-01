@@ -22,7 +22,7 @@ private:
   double LR = 3e-4;
   Tensor logTemp;
   Tensor temp;
-  float entropyTarget = .7 * -log(1.f / 3);
+  float entropyTarget = .7 * -log(1.f / Action::dim);
 
   std::shared_ptr<nn::Sequential> actor;
   nn::Sequential critic1, critic2, target1, target2;
