@@ -56,10 +56,11 @@ torch::Tensor Observation::toTensor() const {
     iter = std::copy(enemyData.begin(), enemyData.end(), iter);
   }
 
-  for (int i = 0; i != numDetected; ++i) {
+  auto size = detectedBodies.size();
+  for (int i = 0; i != numDetected && i != size; ++i) {
     auto entData = detectedBodies[i].toArray();
     iter = std::copy(entData.begin(), entData.end(), iter);
   }
-  return torch::from_blob(blob.data(), {dim}).clone();
+ return torch::from_blob(blob.data(), {dim}).clone();
 }
 
