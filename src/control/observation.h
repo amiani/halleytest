@@ -5,28 +5,49 @@
 #include <halley.hpp>
 using namespace Halley;
 
-struct EntityData {
+enum Allegiance {
+  NEUTRAL,
+  ALLY,
+  ENEMY
+};
+
+struct StateBase {
   cp::Vect position;
   float rotation;
   cp::Vect velocity;
   float health;
-  std::array<float, 6> toBlob() const;
-  EntityData normalize() const;
-  static const cp::Vect spaceSize;
-  static const cp::Vect maxVelocity;
-  static const int maxHealth = 1000;
+
+  inline static const int dim = 6;
+  template<size_t size>
+  std::array<float, size> toArray() const;
+
+protected:
+  StateBase(const cp::Body& body, int health);
+};
+
+struct EntityState final : public StateBase {
+  EntityState(const cp::Body& body, int health, Allegiance allegiance);
+  Allegiance allegiance;
+  inline static const int dim = StateBase::dim + 3;
+  std::array<float, EntityState::dim> toArray() const;
+};
+
+struct SelfState final : public StateBase {
+  SelfState(const cp::Body& body, int health);
+  float angularVelocity;
+  inline static const int dim = StateBase::dim + 1;
+  std::array<float, SelfState::dim> toArray() const;
 };
 
 struct Observation {
+  Observation(SelfState s) : self(s) {}
   UUID uuid;
   bool terminal;
-  cp::Vect goal;
-  float angularVelocity;
-  EntityData self;
-  //EntityData enemies[1];
-  std::vector<EntityData> detectedBodies;
+  SelfState self;
+  std::vector<EntityState> enemies;
+  std::vector<EntityState> detectedBodies;
   //EntityData allies[1];
   torch::Tensor toTensor() const;
-  inline static const int dim = 6*31 + 3;
+  inline static const int dim = SelfState::dim + EntityState::dim * 31;
 };
 

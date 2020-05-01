@@ -1,6 +1,18 @@
 #include "observation.h"
 
-std::array<float, 6> EntityData::toBlob() const {
+StateBase::StateBase(const cp::Body& body, int health)
+  : position(body.getPosition()),
+  velocity(body.getVelocity()),
+  health(health) {
+  float bodyAngle = static_cast<float>(body.getAngle());
+  if (bodyAngle > 0)
+    rotation = (fmod(bodyAngle + M_PI, 2 * M_PI) - M_PI) / M_PI;
+  else
+    rotation = (fmod(bodyAngle - M_PI, 2 * M_PI) + M_PI) / M_PI;
+}
+
+template<size_t size>
+std::array<float, size> StateBase::toArray() const {
   return {
     position.x,
     position.y,
@@ -11,37 +23,43 @@ std::array<float, 6> EntityData::toBlob() const {
   };
 }
 
-EntityData EntityData::normalize() const {
-  float rotationScaled;
-  if (rotation > 0)
-    rotationScaled = (fmod(rotation + M_PI, 2 * M_PI) - M_PI) / M_PI;
-  else
-    rotationScaled = (fmod(rotation - M_PI, 2 * M_PI) + M_PI) / M_PI;
+EntityState::EntityState(const cp::Body& body, int health, Allegiance allegiance)
+: StateBase(body, health), allegiance(allegiance) {}
 
-  return {
-    cp::Vect(position.x/spaceSize.x, position.y/spaceSize.y),
-    rotationScaled,
-    cp::Vect(velocity.x/maxVelocity.x, velocity.y/maxVelocity.y),
-    health / 500 - 1
-  };
+std::array<float, EntityState::dim> EntityState::toArray() const {
+  auto base = StateBase::toArray<dim>();
+  std::copy(base.begin(), base.end(), base.begin());
+  base[dim-3] = allegiance == ALLY;
+  base[dim-2] = allegiance == ENEMY;
+  base[dim-1] = 1;
+  return base;
 }
 
-const cp::Vect EntityData::spaceSize = cp::Vect(1920, 1080);
-const cp::Vect EntityData::maxVelocity = cp::Vect(400, 400);
+SelfState::SelfState(const cp::Body& body, int health)
+: StateBase(body, health), angularVelocity(body.getAngularVelocity()) {}
+
+std::array<float, SelfState::dim> SelfState::toArray() const {
+  auto base = StateBase::toArray<dim>();
+  base.back() = angularVelocity;
+  return base;
+}
 
 torch::Tensor Observation::toTensor() const {
-  std::array<float, dim> blob;
-  blob.fill(0);
+  std::array<float, dim> blob{};
+  auto iter = blob.begin();
 
-  auto selfBlob = self.normalize().toBlob();
-  std::copy(selfBlob.begin(), selfBlob.end(), blob.begin());
-  for (int i = 0; i != 30, i != detectedBodies.size(); ++i) {
-    auto entBlob = detectedBodies[i].normalize().toBlob();
-    std::copy(entBlob.begin(), entBlob.end(), blob.begin() + (6*(i+1)));
+  auto selfData = self.toArray();
+  iter = std::copy(selfData.begin(), selfData.end(), iter);
+
+  for (auto& enemy : enemies) {
+    auto enemyData = enemy.toArray();
+    iter = std::copy(enemyData.begin(), enemyData.end(), iter);
   }
-  blob[dim-3] = angularVelocity/20;
-  blob[dim-2] = goal.x/1920;
-  blob[dim-1] = goal.y/1080;
+
+  for (auto& detected : detectedBodies) {
+    auto entData = detected.toArray();
+    iter = std::copy(entData.begin(), entData.end(), iter);
+  }
   return torch::from_blob(blob.data(), {dim}).clone();
 }
 

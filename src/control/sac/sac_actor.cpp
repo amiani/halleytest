@@ -7,15 +7,15 @@
 
 SACActor::SACActor() :
   net(std::make_shared<nn::Sequential>(
-    nn::Linear(6*31+3, 128),
+    nn::Linear(Observation::dim, 128),
     nn::ReLU(),
     nn::Linear(128, 128),
     nn::ReLU(),
-    nn::Linear(128, 3),
+    nn::Linear(128, Action::dim),
     nn::Softmax(-1))),
   trainer(SACTrainer(net)) {
   (*net)->to(DEVICE);
-  load(*net, "longactor.pt");
+  //load(*net, "longactor.pt");
 }
 
 Action SACActor::act(const Observation& o, float r) {
@@ -30,11 +30,13 @@ Action SACActor::act(const Observation& o, float r) {
   }
   Action a = {
     .throttle = true,
-    .fire = false,
     .tensor = sample
   };
-  if (action == 0) a.direction = LEFT;
-  else if (action == 1) a.direction = RIGHT;
+  if (action >= 3) a.fire = true;
+  else a.fire = false;
+
+  if (action % 3 == 0) a.direction = LEFT;
+  else if (action % 3 == 1) a.direction = RIGHT;
   else a.direction = STRAIGHT;
 
   if (train) {

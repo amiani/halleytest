@@ -26,5 +26,5 @@ struct Action {
   bool fire = false;
   Direction direction = STRAIGHT;
   torch::Tensor tensor;
-  inline static const int dim = 3;
+  inline static const int dim = 6;
 };

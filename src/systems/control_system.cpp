@@ -21,31 +21,19 @@ public:
   }
 
   Observation makeObservation(MainFamily& e, bool isTerminal) {
-    auto o = Observation();
+    Observation o(SelfState(*e.body.body, e.health.health));
     o.terminal = isTerminal;
-    o.self = makeEntityData(*e.body.body, e.health.health);
     for (auto& id : e.detector.entities) {
       auto other = getWorld().tryGetEntity(id);
       if (other->isAlive()) {
         auto& bodyComponent = other->getComponent<BodyComponent>();
-        auto& body = bodyComponent.body;
-        //auto& health = other->getComponent<HealthComponent>().health;
-        o.detectedBodies.push_back(makeEntityData(*body, 10));
+        auto& body = *bodyComponent.body;
+        //auto health = other->getComponent<HealthComponent>().health;
+        o.detectedBodies.emplace_back(body, 10, NEUTRAL);
       }
     }
-    o.goal = e.goal.position;
-    o.angularVelocity = e.body.body->getAngularVelocity();
     o.uuid = e.shipControl.controller->getUUID();
     return o;
-  }
-
-  EntityData makeEntityData(cp::Body& body, int health) {
-    return {
-      .position = body.getPosition(),
-      .rotation = body.getAngle(),
-      .velocity = body.getVelocity(),
-      .health = health
-    };
   }
 
   double lastDistance = -1;
