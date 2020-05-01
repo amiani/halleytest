@@ -17,7 +17,6 @@ public:
   DQNTrainer();
   void addStep(Observation& o, Action& a, float r);
   void improve() override;
-  std::shared_ptr<Actor> getActor() override { return actor; }
 
 private:
   static const float GAMMA;
