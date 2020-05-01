@@ -7,6 +7,5 @@
 #include "action.h"
 
 struct Actor {
-  //Actor() {};
-  virtual Action act(const Observation& o) =0;
+  virtual Action act(const Observation& o, float r) =0;
 };

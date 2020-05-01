@@ -1,10 +1,11 @@
 #include <src/control/dqn/dqn_trainer.h>
 #include <src/control/sac/sac_trainer.h>
+#include <src/control/sac/sac_actor.h>
 #include "controller_service.h"
 #include "src/control/controller.h"
 
 ControllerService::ControllerService(String actorPath, String critic1Path, String critic2Path)
-  : actorPath(actorPath), critic1Path(critic1Path), critic2Path(critic2Path) {}
+  : actorPath(actorPath), critic1Path(critic1Path), critic2Path(critic2Path), actor(std::make_shared<SACActor>()){}
 
 std::shared_ptr<InputController> ControllerService::makeInputController(
   InputVirtual& device,
@@ -15,17 +16,11 @@ std::shared_ptr<InputController> ControllerService::makeInputController(
 }
 
 std::shared_ptr<RLController> ControllerService::makeRLController() {
-  auto trainer = std::make_unique<SACTrainer>();
-  auto actor = trainer->getActor();
-  auto c = std::make_shared<RLController>(std::move(trainer), actor, true);
+  auto c = std::make_shared<RLController>(actor);
   rlControllers.push_back(c);
   return c;
 }
 
 Controller& ControllerService::getController(int id) {
   return *controllers[id];
-}
-
-std::shared_ptr<RLController> ControllerService::getRLController() {
-  return rlControllers.empty() ? makeRLController() : rlControllers[0];
 }

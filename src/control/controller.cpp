@@ -3,12 +3,18 @@
 #include "src/utils.h"
 #include <chrono>
 
+Controller::Controller() : uuid(Halley::UUID::generate()) {}
+
 bool Controller::isObserver() {
   return _isObserver;
 }
 
 int Controller::getNextId() {
   return ++lastId;
+}
+
+Halley::UUID Controller::getUUID() const {
+  return uuid;
 }
 
 InputController::InputController(
@@ -28,42 +34,31 @@ InputController::InputController(
   id = getNextId();
 }
 
-const Action& InputController::update(Time t, Observation o, float reward) {
+Action InputController::update(Time t, Observation o, float reward) {
   //add tuple to internal batch?
   return update(t);
 }
 
-const Action& InputController::update(Time t) {
+Action InputController::update(Time t) {
   device.update(t);
-  auto a = std::make_shared<Action>();
-  a->throttle = device.isButtonDown(3);
-  a->fire = device.isButtonPressed(4);
+  Action a;
+  a.throttle = device.isButtonDown(3);
+  a.fire = device.isButtonPressed(4);
   if (device.isButtonDown(2)) {
-    a->direction = LEFT;
+    a.direction = LEFT;
   } else if (device.isButtonDown(1)) {
-    a->direction = RIGHT;
+    a.direction = RIGHT;
   }
-  actions.push_back(a);
-  return *a;
+  return a;
 }
 
-RLController::RLController(std::unique_ptr<Trainer> t, bool train)
-  : trainer(std::move(t)), actor(trainer->getActor()), train(train) {}
-
-RLController::RLController(std::unique_ptr<Trainer> t, std::shared_ptr<Actor> actor, bool train)
-  : trainer(std::move(t)), actor(actor), train(train) {}
-
-RLController::RLController(std::shared_ptr<Actor> actor, bool train) : actor(actor), train(train) {}
+RLController::RLController(std::shared_ptr<Actor> actor) : actor(actor) {}
 
 auto start = std::chrono::high_resolution_clock::now();
-const Action& RLController::update(Time time, Observation o, float r) {
-  auto a = std::make_shared<Action>(actor->act(o));
-  if (train) {
-    trainer->addStep(o, *a, r);
-  }
-  return *a;
+Action RLController::update(Time time, Observation o, float r) {
+  return actor->act(o, r);
 }
 
-const Action& RLController::update(Time t) {
+Action RLController::update(Time t) {
   throw std::logic_error("RLController must be updated with an Observation");
 }

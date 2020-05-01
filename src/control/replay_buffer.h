@@ -34,7 +34,12 @@ public:
   int size();
 
 private:
-  std::vector<Trajectory> trajectories = {Trajectory()};
+  std::vector<std::unique_ptr<Trajectory>> trajectories;
+  struct Hasher {
+    size_t operator()(const Halley::UUID& uuid) const { return std::hash<std::string>()(uuid.toString().cppStr()); }
+  };
+  std::unordered_map<Halley::UUID, Trajectory*, Hasher> trajMap;
+
   int size_ = 0;
 };
 

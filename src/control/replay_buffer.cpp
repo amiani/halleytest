@@ -13,9 +13,9 @@ Batch ReplayBuffer::sample(int size) {
   std::vector<int> d;
 
   for (int i = 0; i != size; ++i) {
-    auto& traj = trajectories[rand() % trajectories.size()];
+    auto& traj = *trajectories[rand() % trajectories.size()];
     if (traj.size() > 1) {
-      int stepIndex = rand() % (traj.size() - 1);
+      unsigned long stepIndex = rand() % (traj.size() - 1);
       auto& step = traj[stepIndex];
       auto& next = traj[stepIndex + 1].observation;
       o.push_back(step.observation.toTensor());
@@ -48,27 +48,32 @@ Batch ReplayBuffer::sample(int size) {
 
 Step lastStep;
 void ReplayBuffer::addStep(Observation o, Action a, float r) {
-  if (size_ > 20000) {
-    size_ -= trajectories.begin()->size();
+  if (size_ > 200000) {
+    size_ -= (*trajectories.begin())->size();
     trajectories.erase(trajectories.begin());
   }
-  if (size_ > 0) {
-    lastStep.reward = r;
-    trajectories.back().push_back(lastStep);
-    if (lastStep.observation.terminal) {
-      trajectories.push_back(Trajectory());
-    }
+
+  auto trajIter = trajMap.find(o.uuid);
+  if (trajIter == trajMap.end()) {
+    auto& traj = trajectories.emplace_back(new Trajectory{{ o, a }});
+    trajMap[o.uuid] = traj.get();
+  } else {
+    trajIter->second->back().reward = r;
+    trajIter->second->push_back({o, a});
   }
-  lastStep = {o, a};
   ++size_;
 }
 
 void ReplayBuffer::printMeanReturn(uint numReturns) {
   if (numReturns < trajectories.size()) {
     float meanReturn = 0;
+    auto traj = trajectories.begin();
+    while ((*traj)->end()->observation.terminal) {
+      ++traj;
+    }
     for (int i = 0; i != numReturns; ++i) {
-      auto& traj = *(trajectories.end() - i - 2);
-      for (auto& step : traj) meanReturn += step.reward;
+      --traj;
+      for (auto& step : **traj) meanReturn += step.reward;
     }
     meanReturn /= numReturns;
     std::cout << "meanReturn: " << meanReturn << std::endl;

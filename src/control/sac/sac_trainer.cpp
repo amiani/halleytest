@@ -4,15 +4,15 @@
 
 #include "sac_trainer.h"
 
-SACTrainer::SACTrainer()
-  : actor(std::make_shared<SACActor>()),
+SACTrainer::SACTrainer(std::shared_ptr<nn::Sequential> actor)
+  : actor(actor),
   critic1(makeCritic()),
   critic2(makeCritic()),
   target1(makeCritic()),
   target2(makeCritic()),
   logTemp(tensor(log(1), TensorOptions(DEVICE))),
   temp(tensor(1, TensorOptions(DEVICE))),
-  actorOptimizer(actor->net->parameters(), optim::AdamOptions(LR)),
+  actorOptimizer((*actor)->parameters(), optim::AdamOptions(LR)),
   critic1Optimizer(critic1->parameters(true), optim::AdamOptions(LR)),
   critic2Optimizer(critic2->parameters(true), optim::AdamOptions(LR)),
   tempOptimizer({logTemp}, optim::AdamOptions(LR)) {
@@ -31,7 +31,7 @@ SACTrainer::SACTrainer()
 }
 
 
-void SACTrainer::addStep(Observation& o, Action& a, float r) {
+void SACTrainer::addStep(const Observation& o, const Action& a, float r) {
   replayBuffer.addStep(o, a, r);
   if (replayBuffer.size() > 256) {
     improve();
@@ -49,7 +49,7 @@ void SACTrainer::improve() {
   if (improvements % 1000 == 0) {
     std::cout << "temp: " << temp.item<float>() << std::endl;
     replayBuffer.printMeanReturn(20);
-    save(actor->net, "latestactor.pt");
+    save(*actor, "latestactor.pt");
   }
   ++improvements;
 }
@@ -58,7 +58,7 @@ void SACTrainer::updateCritics(Batch& batch) {
   Tensor target;
   {
     NoGradGuard guard;
-    auto pi = actor->net->forward(batch.next);
+    auto pi = (*actor)->forward(batch.next);
     auto qnext1 = target1->forward(batch.next);
     auto qnext2 = target2->forward(batch.next);
     auto minqnext = torch::min(qnext1, qnext2);
@@ -80,7 +80,7 @@ void SACTrainer::updateCritics(Batch& batch) {
 }
 
 Tensor SACTrainer::updateActor(Batch& batch) {
-  auto pi = actor->net->forward(batch.observation);
+  auto pi = (*actor)->forward(batch.observation);
   auto q1 = critic1->forward(batch.observation);
   auto q2 = critic2->forward(batch.observation);
   auto minq = torch::min(q1, q2);

@@ -3,21 +3,23 @@
 //
 
 #include "sac_actor.h"
+#include "sac_trainer.h"
 
-SACActor::SACActor() {
-  net = nn::Sequential(
+SACActor::SACActor() :
+  net(std::make_shared<nn::Sequential>(
     nn::Linear(6*31+3, 128),
     nn::ReLU(),
     nn::Linear(128, 128),
     nn::ReLU(),
     nn::Linear(128, 3),
-    nn::Softmax(-1));
-  net->to(DEVICE);
-  load(net, "longactor.pt");
+    nn::Softmax(-1))),
+  trainer(SACTrainer(net)) {
+  (*net)->to(DEVICE);
+  load(*net, "longactor.pt");
 }
 
-Action SACActor::act(const Observation& o) {
-  auto probs = net->forward(o.toTensor().to(DEVICE));
+Action SACActor::act(const Observation& o, float r) {
+  auto probs = (*net)->forward(o.toTensor().to(DEVICE));
   Tensor sample = torch::eye(1);
   long action;
   if (deterministic) {
@@ -26,14 +28,17 @@ Action SACActor::act(const Observation& o) {
     sample = multinomial(probs, 1, true);
     action = sample.item<long>();
   }
-  Direction d;
-  if (action == 0) d = LEFT;
-  else if (action == 1) d = RIGHT;
-  else d = STRAIGHT;
-  return {
+  Action a = {
     .throttle = true,
     .fire = false,
-    .direction = d,
     .tensor = sample
   };
+  if (action == 0) a.direction = LEFT;
+  else if (action == 1) a.direction = RIGHT;
+  else a.direction = STRAIGHT;
+
+  if (train) {
+    trainer.addStep(o, a, r);
+  }
+  return a;
 }

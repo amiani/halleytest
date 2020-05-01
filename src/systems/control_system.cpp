@@ -9,7 +9,7 @@ public:
   void update(Halley::Time time, MainFamily& e) {
     if (frames % 8 == 0) {
       if (frames >= 180) terminal = true;
-      auto& action = updateController(time, e, terminal);
+      auto action = updateController(time, e, terminal);
       if (terminal) {
         getAPI().core->setStage(std::make_unique<GameStage>());
       } else {
@@ -35,6 +35,7 @@ public:
     }
     o.goal = e.goal.position;
     o.angularVelocity = e.body.body->getAngularVelocity();
+    o.uuid = e.shipControl.controller->getUUID();
     return o;
   }
 
@@ -48,7 +49,7 @@ public:
   }
 
   double lastDistance = -1;
-  const Action& updateController(Halley::Time time, MainFamily& e, bool isTerminal) {
+  Action updateController(Halley::Time time, MainFamily& e, bool isTerminal) {
     auto body = e.body.body;
     if (e.observer.hasValue()) {
       auto observation = makeObservation(e, isTerminal);

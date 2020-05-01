@@ -7,16 +7,14 @@
 
 #include <src/control/trainer.h>
 #include "src/control/replay_buffer.h"
-#include "sac_actor.h"
 
 using namespace torch;
 
-class SACTrainer : public Trainer{
+class SACTrainer : public Trainer {
 public:
-  SACTrainer();
-  void addStep(Observation& o, Action& a, float r);
+  SACTrainer(std::shared_ptr<nn::Sequential> actor);
+  void addStep(const Observation& o, const Action& a, float r);
   void improve() override;
-  std::shared_ptr<Actor> getActor() override { return actor; }
 
 private:
   static const float GAMMA;
@@ -26,7 +24,7 @@ private:
   Tensor temp;
   float entropyTarget = .7 * -log(1.f / 3);
 
-  std::shared_ptr<SACActor> actor;
+  std::shared_ptr<nn::Sequential> actor;
   nn::Sequential critic1, critic2, target1, target2;
   optim::Adam actorOptimizer, critic1Optimizer, critic2Optimizer, tempOptimizer;
 

@@ -18,6 +18,7 @@ struct EntityData {
 };
 
 struct Observation {
+  UUID uuid;
   bool terminal;
   cp::Vect goal;
   float angularVelocity;

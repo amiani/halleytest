@@ -7,13 +7,19 @@
 
 #include <src/control/actor.h>
 #include "torch/torch.h"
+#include "sac_trainer.h"
 
 using namespace torch;
 
-struct SACActor : public Actor {
+class SACActor : public Actor {
+  std::shared_ptr<nn::Sequential> net;
+
+public:
   SACActor();
-  Action act(const Observation& o) override;
-  nn::Sequential net;
+  Action act(const Observation& o, float r) override;
   bool deterministic = false;
+  bool train = true;
+  SACTrainer trainer;
+
 };
 

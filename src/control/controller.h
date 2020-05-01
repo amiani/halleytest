@@ -8,9 +8,11 @@
 
 class Controller {
 public:
-  virtual const Action& update(Time t, Observation o, float reward) = 0;
-  virtual const Action& update(Time t) = 0;
+  Controller();
+  virtual Action update(Time t, Observation o, float reward) = 0;
+  virtual Action update(Time t) = 0;
   bool isObserver();
+  Halley::UUID getUUID() const;
 
 protected:
   int id;
@@ -22,14 +24,15 @@ protected:
 
 private:
   inline static unsigned int lastId;
+  Halley::UUID uuid;
 };
 
 class InputController : public Controller {
 public:
   InputController(InputVirtual& device, Transform2DComponent& cameraTransform);
   InputController(InputVirtual& device, Transform2DComponent& cameraTransform, bool isObserver);
-  const Action& update(Time t, Observation o, float reward) override;
-  const Action& update(Time t) override;
+  Action update(Time t, Observation o, float reward) override;
+  Action update(Time t) override;
 
 private:
   InputVirtual device;
@@ -38,14 +41,10 @@ private:
 
 class RLController : public Controller {
 public:
-  RLController(std::unique_ptr<Trainer>, bool train = true);
-  RLController(std::unique_ptr<Trainer>, std::shared_ptr<Actor> actor, bool train = true);
-  RLController(std::shared_ptr<Actor>, bool train = true);
-  const Action& update(Halley::Time t, Observation o, float r) override;
-  const Action& update(Halley::Time t) override;
+  RLController(std::shared_ptr<Actor> actor);
+  Action update(Halley::Time t, Observation o, float r) override;
+  Action update(Halley::Time t) override;
 
 private:
-  bool train;
-  std::unique_ptr<Trainer> trainer;
   std::shared_ptr<Actor> actor;
 };
