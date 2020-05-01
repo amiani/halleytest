@@ -6,8 +6,7 @@
 #include "src/utils.h"
 #include "action.h"
 
-class Actor {
-public:
-  Actor() {};
+struct Actor {
+  //Actor() {};
   virtual Action act(const Observation& o) =0;
 };

@@ -10,14 +10,9 @@
 
 using namespace torch;
 
-class SACActor : public Actor {
-public:
+struct SACActor : public Actor {
   SACActor();
   Action act(const Observation& o) override;
-  Tensor forward(const Tensor& o);
-  nn::Sequential& getNet() { return net; }
-
-private:
   nn::Sequential net;
   bool deterministic = false;
 };

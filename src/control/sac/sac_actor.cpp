@@ -17,7 +17,7 @@ SACActor::SACActor() {
 }
 
 Action SACActor::act(const Observation& o) {
-  auto probs = forward(o.toTensor().to(DEVICE));
+  auto probs = net->forward(o.toTensor().to(DEVICE));
   Tensor sample = torch::eye(1);
   long action;
   if (deterministic) {
@@ -36,9 +36,4 @@ Action SACActor::act(const Observation& o) {
     .direction = d,
     .tensor = sample
   };
-}
-
-Tensor SACActor::forward(const Tensor& o) {
-  auto probs = net->forward(o);
-  return probs;
 }
