@@ -7,7 +7,7 @@
 #include "chipmunk.hpp"
 #include "torch/torch.h"
 
-struct OldAction {
+struct MixedAction {
   bool throttle = false;
   bool fire = false;
   cp::Vect target = cp::Vect();
