@@ -21,11 +21,9 @@ using namespace Halley;
 class ShipSystem final : public ShipSystemBase<ShipSystem> {
 public:
   void init(){
-    auto player = spawnPlayerShip(shipService->getShip("large_grey"));
-    auto playerPosition = player.getComponent<BodyComponent>().body->getPosition();
-    auto goal = spawnGoal(playerPosition);
-    auto goalPosition = goal.getComponent<BodyComponent>().body->getPosition();
-    player.addComponent(GoalComponent(goalPosition));
+
+    auto player1 = spawnPlayerShip(shipService->getShip("large_grey"), true, true);
+    auto player2 = spawnPlayerShip(shipService->getShip("large_grey"), true, false);
   }
 
   void update(Time t) {}
@@ -61,7 +59,6 @@ public:
     auto sprite = Sprite()
       .setImage(getResources(), config.image)
       .setPivot(Vector2f(.5f, .5f));
-    auto bgSprite = Sprite().setImage(getResources(), "goldstartile.jpg");
     auto h = Hardpoint();
     h.weaponId = laser.getEntityId();
     h.offset = Vector2f(25, 0);
@@ -73,8 +70,7 @@ public:
       .addComponent(HealthComponent(100))
       .addComponent(SpriteComponent(sprite, 0, 1))
       .addComponent(HardpointsComponent(std::vector<Hardpoint>{h}))
-      .addComponent(Transform2DComponent())
-      .addComponent(BackgroundCameraComponent(1, Colour4f(0.0f, 0.0f, 0.0f), 1, 0, bgSprite));
+      .addComponent(Transform2DComponent());
 
     laser.addComponent(Transform2DComponent(ship.getComponent<Transform2DComponent>(), Vector2f(25, 0)));
     return ship;
@@ -84,13 +80,21 @@ public:
     body.updateVelocity(gravity, .99, dt);
   };
 
-  EntityRef spawnPlayerShip(const ShipConfig& config) {
+  EntityRef spawnPlayerShip(const ShipConfig& config, bool isRL, bool withCamera) {
     auto ship = spawnShip(config);
-    auto& device = inputService->getInput();
-    auto& transform = ship.getComponent<Transform2DComponent>();
-    auto c = controllerService->makeInputController(device, transform);
-    //auto c = controllerService->getRLController();
-    ship.addComponent(ShipControlComponent(c));
+    if (withCamera) {
+      auto bgSprite = Sprite().setImage(getResources(), "goldstartile.jpg");
+      ship.addComponent(BackgroundCameraComponent(1, Colour4f(0.0f, 0.0f, 0.0f), 1, 0, bgSprite));
+    }
+    if (isRL) {
+      auto c = controllerService->makeRLController();
+      ship.addComponent(ShipControlComponent(c));
+    } else {
+      auto& device = inputService->getInput();
+      auto& transform = ship.getComponent<Transform2DComponent>();
+      auto c = controllerService->makeInputController(device, transform);
+      ship.addComponent(ShipControlComponent(c));
+    }
     return ship;
   }
 
