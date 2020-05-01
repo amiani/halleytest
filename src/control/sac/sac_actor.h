@@ -20,6 +20,5 @@ public:
   bool deterministic = false;
   bool train = true;
   SACTrainer trainer;
-
 };
 

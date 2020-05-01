@@ -42,13 +42,13 @@ unsigned long long improvements = 0;
 void SACTrainer::improve() {
   auto batch = replayBuffer.sample(256);
   updateCritics(batch);
-  auto pi = updateActor(batch);
-  updateTemp(pi);
+  auto logpi = updateActor(batch);
+  updateTemp(logpi);
   updateTargets(target1, critic1);
   updateTargets(target2, critic2);
   if (improvements % 1000 == 0) {
     std::cout << "temp: " << temp.item<float>() << std::endl;
-    replayBuffer.printMeanReturn(20);
+    replayBuffer.printMeanReturn(5);
     save(*actor, "latestactor.pt");
   }
   ++improvements;
@@ -58,11 +58,12 @@ void SACTrainer::updateCritics(Batch& batch) {
   Tensor target;
   {
     NoGradGuard guard;
-    auto pi = (*actor)->forward(batch.next);
+    auto logpi = (*actor)->forward(batch.next);
+    auto pi = logpi.exp();
     auto qnext1 = target1->forward(batch.next);
     auto qnext2 = target2->forward(batch.next);
     auto minqnext = torch::min(qnext1, qnext2);
-    auto vnext = sum(pi * (minqnext - temp * pi.log()), {1});
+    auto vnext = sum(pi * (minqnext - temp * logpi), {1});
     target = batch.reward + GAMMA * (1 - batch.done) * vnext;
   }
 
@@ -80,19 +81,20 @@ void SACTrainer::updateCritics(Batch& batch) {
 }
 
 Tensor SACTrainer::updateActor(Batch& batch) {
-  auto pi = (*actor)->forward(batch.observation);
+  auto logpi = (*actor)->forward(batch.observation);
+  auto pi = logpi.exp();
   auto q1 = critic1->forward(batch.observation);
   auto q2 = critic2->forward(batch.observation);
   auto minq = torch::min(q1, q2);
-  auto loss = (pi * (temp * pi.log() - minq)).sum({1}).mean();
+  auto loss = (pi * (temp * logpi - minq)).sum({1}).mean();
   actorOptimizer.zero_grad();
   loss.backward();
   actorOptimizer.step();
-  return pi;
+  return logpi;
 }
 
-void SACTrainer::updateTemp(Tensor& pi) {
-  auto loss = (-logTemp * (sum(pi * pi.log(), {1}).detach() + entropyTarget)).mean();
+void SACTrainer::updateTemp(Tensor& logpi) {
+  auto loss = (-logTemp * (sum(logpi.exp() * logpi, {1}).detach() + entropyTarget)).mean();
   tempOptimizer.zero_grad();
   loss.backward();
   tempOptimizer.step();

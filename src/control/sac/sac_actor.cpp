@@ -12,14 +12,15 @@ SACActor::SACActor() :
     nn::Linear(128, 128),
     nn::ReLU(),
     nn::Linear(128, Action::dim),
-    nn::Softmax(-1))),
+    nn::LogSoftmax(-1))),
   trainer(SACTrainer(net)) {
   (*net)->to(DEVICE);
   //load(*net, "longactor.pt");
 }
 
 Action SACActor::act(const Observation& o, float r) {
-  auto probs = (*net)->forward(o.toTensor().to(DEVICE));
+  auto logits = (*net)->forward(o.toTensor().to(DEVICE));
+  auto probs = logits.exp();
   Tensor sample;
   long action;
   if (deterministic) {
