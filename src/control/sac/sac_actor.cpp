@@ -20,10 +20,11 @@ SACActor::SACActor() :
 
 Action SACActor::act(const Observation& o, float r) {
   auto probs = (*net)->forward(o.toTensor().to(DEVICE));
-  Tensor sample = torch::eye(1);
+  Tensor sample;
   long action;
   if (deterministic) {
     action = probs.argmax().item<long>();
+    sample = tensor(action);
   } else {
     sample = multinomial(probs, 1, true);
     action = sample.item<long>();

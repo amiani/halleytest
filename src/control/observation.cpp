@@ -31,7 +31,7 @@ std::array<float, EntityState::dim> EntityState::toArray() const {
   std::copy(base.begin(), base.end(), base.begin());
   base[dim-3] = allegiance == ALLY;
   base[dim-2] = allegiance == ENEMY;
-  base[dim-1] = 1;
+  base[dim-1] = 1;  //this is to distinguish between an entity with data close to zero and an empty entity
   return base;
 }
 
@@ -56,8 +56,8 @@ torch::Tensor Observation::toTensor() const {
     iter = std::copy(enemyData.begin(), enemyData.end(), iter);
   }
 
-  for (auto& detected : detectedBodies) {
-    auto entData = detected.toArray();
+  for (int i = 0; i != numDetected; ++i) {
+    auto entData = detectedBodies[i].toArray();
     iter = std::copy(entData.begin(), entData.end(), iter);
   }
   return torch::from_blob(blob.data(), {dim}).clone();

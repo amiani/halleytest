@@ -17,11 +17,11 @@ Batch ReplayBuffer::sample(int size) {
     if (traj.size() > 1) {
       unsigned long stepIndex = rand() % (traj.size() - 1);
       auto& step = traj[stepIndex];
-      auto& next = traj[stepIndex + 1].observation;
-      o.push_back(step.observation.toTensor());
-      a.push_back(step.action.tensor);
+      auto& next = traj[stepIndex + 1];
+      o.push_back(step.observation);
+      a.push_back(step.action);
       r.push_back(step.reward);
-      n.push_back(next.toTensor());
+      n.push_back(next.observation);
       if (next.terminal) {
         d.push_back(1);
       } else {
@@ -47,27 +47,44 @@ Batch ReplayBuffer::sample(int size) {
 }
 
 void ReplayBuffer::addStep(Observation o, Action a, float r) {
+  ++size_;
   if (size_ > 200000) {
     size_ -= (*trajectories.begin())->size();
     trajectories.erase(trajectories.begin());
   }
 
+  auto observation = o.toTensor();
+  auto action = a.tensor;
+
+  //calculate running stats
+  if (size_ == 1) {
+    obsMean = observation.clone();
+    obsStd = torch::zeros_like(observation);
+  } else {
+    auto meanclone = obsMean.clone();
+    obsMean += (observation - obsMean).div(size_);
+    obsStd += (observation - meanclone) * (observation - obsMean);
+  }
+
+  observation -= obsMean;
+  observation /= obsStd;
+
+
   auto trajIter = trajMap.find(o.uuid);
   if (trajIter == trajMap.end()) {
-    auto& traj = trajectories.emplace_back(new Trajectory{{ o, a }});
+    auto& traj = trajectories.emplace_back(new Trajectory{{ observation, action, 0, o.terminal }});
     trajMap[o.uuid] = traj.get();
   } else {
     trajIter->second->back().reward = r;
-    trajIter->second->push_back({o, a});
+    trajIter->second->push_back({ observation, action, 0, o.terminal });
   }
-  ++size_;
 }
 
 void ReplayBuffer::printMeanReturn(uint numReturns) {
   if (numReturns < trajectories.size()) {
     float meanReturn = 0;
     auto traj = trajectories.begin();
-    while ((*traj)->end()->observation.terminal) {
+    while ((*traj)->end()->terminal) {
       ++traj;
     }
     for (int i = 0; i != numReturns; ++i) {

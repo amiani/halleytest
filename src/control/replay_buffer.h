@@ -11,9 +11,10 @@
 using namespace torch;
 
 struct Step {
-  Observation observation;
-  Action action;
+  Tensor observation;
+  Tensor action;
   float reward;
+  bool terminal;
 };
 
 typedef std::vector<Step> Trajectory;
@@ -34,6 +35,8 @@ public:
   int size();
 
 private:
+  Tensor obsMean;
+  Tensor obsStd;
   std::vector<std::unique_ptr<Trajectory>> trajectories;
   struct Hasher {
     size_t operator()(const Halley::UUID& uuid) const { return std::hash<std::string>()(uuid.toString().cppStr()); }
