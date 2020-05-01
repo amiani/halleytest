@@ -86,7 +86,6 @@ public:
     space.addSeparateCollisionHandler(DETECTORBODY, [this](cp::Arbiter arb, auto& s) {
       auto detector = getId(arb.getBodyA());
       auto other = getId(arb.getBodyB());
-      //std::cout << "separate: " << otherId.toString() << std::endl;
       sendMessage(detector, DetectMessage(other, false));
     });
 

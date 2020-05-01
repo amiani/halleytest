@@ -58,7 +58,6 @@ system:
     - Observer: optional write
     - Detector: read
     - Health: read
-    - Goal: read
   strategy: individual
   services:
     - ControllerService

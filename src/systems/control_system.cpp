@@ -36,27 +36,11 @@ public:
     return o;
   }
 
-  double lastDistance = -1;
   Action updateController(Halley::Time time, MainFamily& e, bool isTerminal) {
     auto body = e.body.body;
     if (e.observer.hasValue()) {
       auto observation = makeObservation(e, isTerminal);
-      auto distanceToGoal = cp::Vect::dist(body->getPosition(), e.goal.position);
-      if (lastDistance == -1) lastDistance = distanceToGoal;
-      auto delta = lastDistance - distanceToGoal;
-      //auto distanceReward = -(1.f/1000) * distanceToGoal;
-      //auto reward = e.observer->reward + distanceReward;
-      float reward = 0;
-      if (reachedGoal) reward += 1;
-      if (delta > 7) {
-        reward += 1;
-      } else if (delta < -7) {
-        reward -= 1;
-      }
-      lastDistance = distanceToGoal;
-      e.observer->reward = 0;
-      e.observer->totalReward += reward;
-      return e.shipControl.controller->update(time, observation, reward);
+      return e.shipControl.controller->update(time, observation, 0);
     } else {
       return e.shipControl.controller->update(time);
     }
