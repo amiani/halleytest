@@ -44,5 +44,6 @@ private:
   std::unordered_map<Halley::UUID, Trajectory*, Hasher> trajMap;
 
   int size_ = 0;
+  int totalObservations = 0;
 };
 

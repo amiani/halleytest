@@ -48,6 +48,7 @@ Batch ReplayBuffer::sample(int size) {
 
 void ReplayBuffer::addStep(Observation o, Action a, float r) {
   ++size_;
+  ++totalObservations;
   if (size_ > 200000) {
     size_ -= (*trajectories.begin())->size();
     trajectories.erase(trajectories.begin());
@@ -57,18 +58,16 @@ void ReplayBuffer::addStep(Observation o, Action a, float r) {
   auto action = a.tensor;
 
   //calculate running stats
-  if (size_ == 1) {
+  if (totalObservations == 1) {
     obsMean = observation.clone();
-    obsStd = torch::zeros_like(observation);
+    obsStd = torch::zeros_like(observation) + 1e-8;
   } else {
     auto meanclone = obsMean.clone();
-    obsMean += (observation - obsMean).div(size_);
+    obsMean += (observation - obsMean) / totalObservations;
     obsStd += (observation - meanclone) * (observation - obsMean);
+    observation -= obsMean;
+    observation /= obsStd;
   }
-
-  observation -= obsMean;
-  observation /= obsStd;
-
 
   auto trajIter = trajMap.find(o.uuid);
   if (trajIter == trajMap.end()) {
@@ -84,7 +83,7 @@ void ReplayBuffer::printMeanReturn(uint numReturns) {
   if (numReturns < trajectories.size()) {
     float meanReturn = 0;
     auto traj = trajectories.begin();
-    while ((*traj)->end()->terminal) {
+    while ((*traj)->back().terminal) {
       ++traj;
     }
     for (int i = 0; i != numReturns; ++i) {
