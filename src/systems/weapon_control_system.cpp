@@ -41,7 +41,7 @@ public:
     shape->setCollisionType(PROJECTILEBODY);
     shape->setFilter({
       .categories = fPROJECTILE,
-      .mask = fASTEROID });
+      .mask = fASTEROID | fTEAM0SHIP | fTEAM1SHIP });
 
     auto sprite = Sprite()
       .setImage(getResources(), config.projectileImage);
