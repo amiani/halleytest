@@ -7,9 +7,8 @@ public:
   void update(Time t, MainFamily& e) {}
 
   void onMessageReceived(const DamageMessage& msg, MainFamily& e) {
-    e.health.health -= msg.kinetic;
+    e.health.health -= msg.physical;
     if (e.health.health <= 0) {
-      getWorld().destroyEntity(e.entityId);
       sendMessage(msg.attacker, KillMessage(e.entityId));
     }
   }

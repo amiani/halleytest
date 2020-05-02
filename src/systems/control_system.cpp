@@ -76,11 +76,15 @@ public:
   }
 
   void onMessageReceived(const HitMessage& msg, MainFamily& e) {
-    e.observer->reward += msg.kinetic + msg.energy;
+    e.observer->reward += .8 * (msg.physical + msg.energy);
   }
 
   void onMessageReceived(const KillMessage& msg, MainFamily& e) {
     std::cout << "Scored a kill!!\n";
+  }
+
+  void onMessageReceived(const DamageMessage& msg, MainFamily& e) {
+    e.observer->reward -= msg.physical + msg.energy;
   }
 
 private:

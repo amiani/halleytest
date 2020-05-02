@@ -21,7 +21,7 @@ component:
 component:
   name: Projectile
   members:
-    - kineticDamage: int
+    - physicalDamage: int
     - energyDamage: int
     - parent: Halley::EntityId
 
@@ -52,7 +52,7 @@ message:
 message:
   name: Damage
   members:
-    - kinetic: int
+    - physical: int
     - energy: int
     - attacker: Halley::EntityId
 
@@ -61,7 +61,7 @@ message:
 message:
   name: Hit
   members:
-    - kinetic: int
+    - physical: int
     - energy: int
 
 ---

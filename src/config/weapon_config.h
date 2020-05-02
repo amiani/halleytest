@@ -15,4 +15,6 @@ struct WeaponConfig {
   float projectileLifetime;
   float cooldown;
   int speed;
+  int physicalDamage;
+  int energyDamage;
 };

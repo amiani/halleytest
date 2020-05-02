@@ -7,5 +7,7 @@ weapons:
     projectileLifetime: 4
     cooldown: .2
     speed: 750
+    physicalDamage: 10
+    energyDamage: 0
 
 ...

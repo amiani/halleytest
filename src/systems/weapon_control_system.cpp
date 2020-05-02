@@ -47,7 +47,7 @@ public:
       .setImage(getResources(), config.projectileImage);
 
     getWorld().createEntity()
-      .addComponent(ProjectileComponent(10, 0, e.weapon.parent))
+      .addComponent(ProjectileComponent(config.physicalDamage, config.energyDamage, e.weapon.parent))
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape))
       .addComponent(Transform2DComponent())
