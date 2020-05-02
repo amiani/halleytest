@@ -5,7 +5,6 @@
 #include "components/weapon_component.h"
 #include "components/observer_component.h"
 #include "components/ship_control_component.h"
-#include "components/weapon_control_component.h"
 #include "components/sprite_component.h"
 #include "components/health_component.h"
 #include "components/background_camera_component.h"
@@ -31,18 +30,11 @@ public:
   EntityRef spawnShip(const ShipConfig& config) {
     auto& world = getWorld();
 
-    auto& laserNode = getResources().get<ConfigFile>("gameplay/weapons")->getRoot()["weapons"].asSequence()[0];
-    auto laserConfig = WeaponConfig();
-    laserConfig.load(laserNode);
-    auto laser = world.createEntity()
-      .addComponent(WeaponControlComponent())
-      .addComponent(CooldownComponent(laserConfig.cooldown, 0))
-      .addComponent(WeaponComponent(laserConfig));
 
     cp::Float moment = cp::momentForCircle(config.mass, 0, config.radius);
     auto body = std::make_shared<cp::Body>(config.mass, moment);
-    auto randx = 1920 * ((double)rand()/RAND_MAX*2.0-1.0);
-    auto randy = 1080 * ((double)rand()/RAND_MAX*2.0-1.0);
+    auto randx = 1920/2 * ((double)rand()/RAND_MAX*2.0-1.0);
+    auto randy = 1080/2 * ((double)rand()/RAND_MAX*2.0-1.0);
     body->setPosition(cp::Vect(randx, randy));
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
     shape->setCollisionType(SHIPBODY);
@@ -53,9 +45,6 @@ public:
     auto sprite = Sprite()
       .setImage(getResources(), config.image)
       .setPivot(Vector2f(.5f, .5f));
-    auto h = Hardpoint();
-    h.weaponId = laser.getEntityId();
-    h.offset = Vector2f(25, 0);
     auto& ship = world.createEntity()
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape))
@@ -63,10 +52,21 @@ public:
       .addComponent(ObserverComponent(0, 0))
       .addComponent(HealthComponent(100))
       .addComponent(SpriteComponent(sprite, 0, 1))
-      .addComponent(HardpointsComponent(std::vector<Hardpoint>{h}))
+      .addComponent(HardpointsComponent(std::vector<Hardpoint>{}))
       .addComponent(Transform2DComponent());
 
-    laser.addComponent(Transform2DComponent(ship.getComponent<Transform2DComponent>(), Vector2f(25, 0)));
+    auto& laserNode = getResources().get<ConfigFile>("gameplay/weapons")->getRoot()["weapons"].asSequence()[0];
+    auto laserConfig = WeaponConfig();
+    laserConfig.load(laserNode);
+    auto laser = world.createEntity()
+      .addComponent(WeaponComponent(laserConfig, ship.getEntityId()))
+      .addComponent(CooldownComponent(laserConfig.cooldown, 0))
+      .addComponent(Transform2DComponent(ship.getComponent<Transform2DComponent>(), Vector2f(25, 0)));
+    auto h = Hardpoint();
+    h.weaponId = laser.getEntityId();
+    h.offset = Vector2f(25, 0);
+    ship.getComponent<HardpointsComponent>().hardpoints.push_back(h);
+
     return ship;
   }
 

@@ -1,3 +1,4 @@
+#include <gen/cpp/components/projectile_component.h>
 #include "systems/weapon_control_system.h"
 #include "components/body_component.h"
 #include "components/shape_component.h"
@@ -46,6 +47,7 @@ public:
       .setImage(getResources(), config.projectileImage);
 
     getWorld().createEntity()
+      .addComponent(ProjectileComponent(10, 0, e.weapon.parent))
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape))
       .addComponent(Transform2DComponent())

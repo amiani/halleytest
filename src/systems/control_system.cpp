@@ -75,6 +75,10 @@ public:
     reachedGoal = true;
   }
 
+  void onMessageReceived(const HitMessage& msg, MainFamily& e) {
+    e.observer->reward += msg.kinetic + msg.energy;
+  }
+
 private:
   bool reachedGoal = false;
   bool terminal = false;

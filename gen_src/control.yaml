@@ -55,6 +55,7 @@ system:
   messages:
     - FireWeapon: send
     - ReachedGoal: receive
+    - Hit: receive
   access:
   - api
   - world
