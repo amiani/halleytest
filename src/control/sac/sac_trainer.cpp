@@ -114,11 +114,11 @@ void SACTrainer::updateTargets(nn::Sequential& target, nn::Sequential& critic) {
 
 nn::Sequential SACTrainer::makeCritic() {
   return nn::Sequential(
-    nn::Linear(Observation::dim, 128),
+    nn::Linear(Observation::dim, hiddenWidth),
     nn::ReLU(),
-    nn::Linear(128, 128),
+    nn::Linear(hiddenWidth, hiddenWidth),
     nn::ReLU(),
-    nn::Linear(128, Action::dim));
+    nn::Linear(hiddenWidth, Action::dim));
 }
 
 const float SACTrainer::GAMMA = .99;

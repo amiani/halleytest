@@ -20,9 +20,10 @@ private:
   static const float GAMMA;
   static const float TAU;
   double LR = 3e-4;
+  int hiddenWidth = 256;
   Tensor logTemp;
   Tensor temp;
-  float entropyTarget = .7 * -log(1.f / Action::dim);
+  float entropyTarget = .8 * -log(1.f / Action::dim);
 
   std::shared_ptr<nn::Sequential> actor;
   nn::Sequential critic1, critic2, target1, target2;

@@ -7,11 +7,11 @@
 
 SACActor::SACActor() :
   net(std::make_shared<nn::Sequential>(
-    nn::Linear(Observation::dim, 128),
+    nn::Linear(Observation::dim, hiddenWidth),
     nn::ReLU(),
-    nn::Linear(128, 128),
+    nn::Linear(hiddenWidth, hiddenWidth),
     nn::ReLU(),
-    nn::Linear(128, Action::dim),
+    nn::Linear(hiddenWidth, Action::dim),
     nn::LogSoftmax(-1))),
   trainer(SACTrainer(net)) {
   (*net)->to(DEVICE);

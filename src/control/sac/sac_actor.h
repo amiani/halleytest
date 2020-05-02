@@ -13,6 +13,7 @@ using namespace torch;
 
 class SACActor : public Actor {
   std::shared_ptr<nn::Sequential> net;
+  int hiddenWidth = 256;
 
 public:
   SACActor();
