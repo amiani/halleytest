@@ -15,5 +15,5 @@ system:
   access:
     - world
   messages:
-  - Hit: receive
+  - Damage: receive
   - Impact: receive

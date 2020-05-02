@@ -5,8 +5,8 @@ class DefensiveStatSystem final : public DefensiveStatSystemBase<DefensiveStatSy
 public:
   void update(Time t, MainFamily& e) {}
 
-  void onMessageReceived(const HitMessage& msg, MainFamily& e) {
-    e.health.health -= msg.damage;
+  void onMessageReceived(const DamageMessage& msg, MainFamily& e) {
+    e.health.health -= msg.kinetic;
     if (e.health.health <= 0) {
       getWorld().destroyEntity(e.entityId);
     }

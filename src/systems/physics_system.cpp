@@ -70,8 +70,7 @@ public:
     space.addBeginCollisionHandler(PROJECTILEBODY, [this](cp::Arbiter arb, cp::Space& s) {
       auto laser = getId(arb.getBodyA());
       auto other = getId(arb.getBodyB());
-      getWorld().destroyEntity(laser);
-      sendMessage(other, HitMessage(10));
+      sendMessage(laser, ContactMessage(other));
       return false;
     });
 

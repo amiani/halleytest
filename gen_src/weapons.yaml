@@ -18,6 +18,15 @@ component:
 ---
 
 component:
+  name: Projectile
+  members:
+    - kineticDamage: int
+    - energyDamage: int
+    - parent: Halley::EntityId
+
+---
+
+component:
   name: Cooldown
   members:
     - length: float
@@ -29,3 +38,62 @@ component:
   name: Hardpoints
   members:
   - hardpoints: std::vector<Hardpoint>
+
+---
+
+message:
+  name: Contact
+  members:
+    - target: Halley::EntityId
+
+---
+
+message:
+  name: Damage
+  members:
+    - kinetic: int
+    - energy: int
+
+---
+
+message:
+  name: Hit
+  members:
+    - kinetic: int
+    - energy: int
+
+---
+
+message:
+  name: FireWeapon
+
+---
+
+system:
+  name: WeaponControl
+  families:
+    - main:
+        - Weapon: read
+        - Transform2D: write
+        - Cooldown: write
+  strategy: individual
+  messages:
+    - FireWeapon: receive
+  access:
+    - world
+    - resources
+
+---
+
+system:
+  name: Projectile
+  families:
+    - main:
+      - Projectile: read
+  strategy: global
+  messages:
+    - Contact: receive
+    - Damage: send
+    - Hit: send
+  access:
+    - world

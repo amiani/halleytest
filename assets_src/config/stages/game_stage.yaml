@@ -1,6 +1,7 @@
 ---
 timelines:
   fixedUpdate:
+  - Projectile
   - WeaponControl
   - Asteroid
   - Ship

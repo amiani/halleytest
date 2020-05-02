@@ -39,13 +39,6 @@ component:
 ---
 
 message:
-  name: Hit
-  members:
-  - damage: int
-
----
-
-message:
   name: Impact
   members:
   - kineticEnergy: double
@@ -68,7 +61,7 @@ system:
   access:
   - world
   messages:
-  - Hit: send
+  - Contact: send
   - Impact: send
   - ReachedGoal: send
   - Detect: send

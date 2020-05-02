@@ -26,19 +26,9 @@ component:
 ---
 
 component:
-  name: WeaponControl
-
----
-
-component:
   name: Goal
   members:
     - position: cp::Vect
-
----
-
-message:
-  name: FireWeapon
 
 ---
 
@@ -68,19 +58,3 @@ system:
   access:
   - api
   - world
-
----
-
-system:
-  name: WeaponControl
-  families:
-    - main:
-      - Weapon: read
-      - Transform2D: write
-      - Cooldown: write
-  strategy: individual
-  messages:
-    - FireWeapon: receive
-  access:
-    - world
-    - resources
