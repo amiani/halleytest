@@ -21,8 +21,10 @@ using namespace Halley;
 class ShipSystem final : public ShipSystemBase<ShipSystem> {
 public:
   void init(){
-    auto player1 = spawnPlayerShip(shipService->getShip("large_grey"), true, true, 0);
-    auto player2 = spawnPlayerShip(shipService->getShip("large_grey"), true, false, 1);
+    spawnPlayerShip(shipService->getShip("large_grey"), true, true, 0);
+    spawnPlayerShip(shipService->getShip("large_grey"), true, false, 0);
+    spawnPlayerShip(shipService->getShip("large_grey"), true, false, 1);
+    spawnPlayerShip(shipService->getShip("large_grey"), true, false, 1);
   }
 
   void update(Time t) {}
@@ -33,8 +35,8 @@ public:
 
     cp::Float moment = cp::momentForCircle(config.mass, 0, config.radius);
     auto body = std::make_shared<cp::Body>(config.mass, moment);
-    auto randx = 1920/2 * ((double)rand()/RAND_MAX*2.0-1.0);
-    auto randy = 1080/2 * ((double)rand()/RAND_MAX*2.0-1.0);
+    auto randx = 1920/4 * ((double)rand()/RAND_MAX*2.0-1.0);
+    auto randy = 1080/4 * ((double)rand()/RAND_MAX*2.0-1.0);
     body->setPosition(cp::Vect(randx, randy));
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
     shape->setCollisionType(SHIPBODY);
@@ -89,7 +91,7 @@ public:
     }
     ship.getComponent<ShapeComponent>().shape->setFilter({
       .categories = teamFilter,
-      .mask = fGOAL | fASTEROID | fBOUNDARY | fDETECTOR | teamFilter | enemyFilter });
+      .mask = fGOAL | fASTEROID | fBOUNDARY | fDETECTOR | teamFilter | enemyFilter | fPROJECTILE });
     ship.getComponent<DetectorComponent>().shape->setFilter({
       .categories = fDETECTOR,
       .mask = fGOAL | fASTEROID | enemyFilter });  //TODO figure out how to mask for all other teams
@@ -99,12 +101,12 @@ public:
     }
     if (isRL) {
       auto c = controllerService->makeRLController();
-      ship.addComponent(ShipControlComponent(c));
+      ship.addComponent(ShipControlComponent(c, Action()));
     } else {
       auto& device = inputService->getInput();
       auto& transform = ship.getComponent<Transform2DComponent>();
       auto c = controllerService->makeInputController(device, transform);
-      ship.addComponent(ShipControlComponent(c));
+      ship.addComponent(ShipControlComponent(c, Action()));
     }
     return ship;
   }

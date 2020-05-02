@@ -6,18 +6,17 @@
 
 class ControlSystem final : public ControlSystemBase<ControlSystem> {
 public:
-  Action lastAction;
-  void update(Halley::Time time, MainFamily& e) {
-    if (frames % 8 == 0) {
-      if (frames >= 180) terminal = true;
-      auto action = updateController(time, e, terminal);
-      if (terminal) {
-        getAPI().core->setStage(std::make_unique<GameStage>());
-      } else {
-        lastAction = action;
+  void update(Halley::Time time) {
+    for (auto& e : mainFamily) {
+      if (frames % 8 == 0) {
+        if (frames >= 300) terminal = true;
+        updateController(time, e, terminal);
+        if (terminal) {
+          getAPI().core->setStage(std::make_unique<GameStage>());
+        }
       }
+      applyAction(e);
     }
-    applyAction(e, lastAction);
     frames++;
   }
 
@@ -41,17 +40,18 @@ public:
     return o;
   }
 
-  Action updateController(Halley::Time time, MainFamily& e, bool isTerminal) {
+  void updateController(Halley::Time time, MainFamily& e, bool isTerminal) {
     auto body = e.body.body;
     if (e.observer.hasValue()) {
       auto observation = makeObservation(e, isTerminal);
-      return e.shipControl.controller->update(time, observation, 0);
+      e.shipControl.lastAction = e.shipControl.controller->update(time, observation, 0);
     } else {
-      return e.shipControl.controller->update(time);
+      e.shipControl.lastAction = e.shipControl.controller->update(time);
     }
   }
 
-  void applyAction(MainFamily& e, const Action& a) {
+  void applyAction(MainFamily& e) {
+    auto& a = e.shipControl.lastAction;
     auto& body = e.body.body;
     if (a.throttle) {
       body->applyForceAtLocalPoint(cp::Vect(200, 0), cp::Vect(0, 0));

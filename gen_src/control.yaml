@@ -10,10 +10,17 @@ type:
 
 ---
 
+type:
+  name: Action
+  include: "src/control/action.h"
+
+---
+
 component:
   name: ShipControl
   members:
     - controller: std::shared_ptr<Controller>
+    - lastAction: Action
 
 ---
 
@@ -41,7 +48,7 @@ system:
   name: Control
   families:
   - main:
-    - ShipControl: read
+    - ShipControl: write
     - Hardpoints: read
     - Body: write
     - Transform2D: write
@@ -49,7 +56,7 @@ system:
     - Detector: read
     - Health: read
     - Team: read
-  strategy: individual
+  strategy: global
   services:
     - ControllerService
   messages:
