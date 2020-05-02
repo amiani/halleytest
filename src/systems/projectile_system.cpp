@@ -14,13 +14,15 @@ public:
       auto phys = e.projectile.physicalDamage;
       auto en = e.projectile.energyDamage;
       getWorld().destroyEntity(e.entityId);
-      auto parent = getWorld().getEntity(e.projectile.parent);
-      auto target = getWorld().getEntity(msg.target);
-      auto parentTeamComp = parent.tryGetComponent<TeamComponent>();
-      auto targetTeamComp = target.tryGetComponent<TeamComponent>();
-      if (parentTeamComp && targetTeamComp && parentTeamComp->team != targetTeamComp->team) {
-        sendMessage(e.projectile.parent, HitMessage(ki, en));
-        sendMessage(msg.target, DamageMessage(ki, en, e.projectile.parent));
+      auto parent = getWorld().tryGetEntity(e.projectile.parent);
+      auto target = getWorld().tryGetEntity(msg.target);
+      if (parent && target) {
+        auto parentTeamComp = parent->tryGetComponent<TeamComponent>();
+        auto targetTeamComp = target->tryGetComponent<TeamComponent>();
+        if (parentTeamComp && targetTeamComp && parentTeamComp->team != targetTeamComp->team) {
+          sendMessage(e.projectile.parent, HitMessage(phys, en));
+          sendMessage(msg.target, DamageMessage(phys, en, e.projectile.parent));
+        }
       }
     }
   }
