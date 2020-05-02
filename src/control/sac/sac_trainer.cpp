@@ -33,7 +33,7 @@ SACTrainer::SACTrainer(std::shared_ptr<nn::Sequential> actor)
 
 void SACTrainer::addStep(const Observation& o, const Action& a, float r) {
   replayBuffer.addStep(o, a, r);
-  if (replayBuffer.size() > 256) {
+  if (replayBuffer.size() > 256 && replayBuffer.size() % 4 == 0) {
     improve();
   }
 }
