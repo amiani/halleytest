@@ -64,6 +64,7 @@ system:
     - ReachedGoal: receive
     - Hit: receive
     - Kill: receive
+    - Damage: receive
   access:
   - api
   - world
