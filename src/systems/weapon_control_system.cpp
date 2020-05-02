@@ -39,8 +39,8 @@ public:
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
     shape->setCollisionType(PROJECTILEBODY);
     shape->setFilter({
-      .categories = PLAYERPROJECTILE,
-      .mask = ASTEROID });
+      .categories = fPROJECTILE,
+      .mask = fASTEROID });
 
     auto sprite = Sprite()
       .setImage(getResources(), config.projectileImage);

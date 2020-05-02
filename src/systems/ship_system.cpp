@@ -14,6 +14,7 @@
 #include "components/hardpoints_component.h"
 #include "components/shape_component.h"
 #include "components/cooldown_component.h"
+#include "components/team_component.h"
 #include "halley/src/engine/entity/include/halley/entity/components/transform_2d_component.h"
 
 using namespace Halley;
@@ -21,9 +22,8 @@ using namespace Halley;
 class ShipSystem final : public ShipSystemBase<ShipSystem> {
 public:
   void init(){
-
-    auto player1 = spawnPlayerShip(shipService->getShip("large_grey"), true, true);
-    auto player2 = spawnPlayerShip(shipService->getShip("large_grey"), true, false);
+    auto player1 = spawnPlayerShip(shipService->getShip("large_grey"), true, true, 0);
+    auto player2 = spawnPlayerShip(shipService->getShip("large_grey"), true, false, 1);
   }
 
   void update(Time t) {}
@@ -45,15 +45,9 @@ public:
     auto randy = 1080 * ((double)rand()/RAND_MAX*2.0-1.0);
     body->setPosition(cp::Vect(randx, randy));
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
-    shape->setFilter({
-      .categories = PLAYERHULL,
-      .mask = GOAL | ASTEROID });
-    shape->setCollisionType(PLAYERSHIPBODY);
+    shape->setCollisionType(SHIPBODY);
     body->setVelocityUpdateFunc(velocityUpdate);
     auto detector = std::make_shared<cp::CircleShape>(body, config.detectorRadius);
-    detector->setFilter({
-      .categories = PLAYERDETECTOR,
-      .mask = GOAL | ASTEROID });
     detector->setCollisionType(DETECTORBODY);
     detector->setSensor(true);
     auto sprite = Sprite()
@@ -80,8 +74,25 @@ public:
     body.updateVelocity(gravity, .99, dt);
   };
 
-  EntityRef spawnPlayerShip(const ShipConfig& config, bool isRL, bool withCamera) {
+  EntityRef spawnPlayerShip(const ShipConfig& config, bool isRL, bool withCamera, int team) {
     auto ship = spawnShip(config);
+    ship.addComponent(TeamComponent(team));
+    unsigned int teamFilter;
+    unsigned int enemyFilter;
+    if (team == 0) {
+      teamFilter = fTEAM0SHIP;
+      enemyFilter = fTEAM1SHIP;
+    }
+    else if (team == 1) {
+      teamFilter = fTEAM1SHIP;
+      enemyFilter = fTEAM0SHIP;
+    }
+    ship.getComponent<ShapeComponent>().shape->setFilter({
+      .categories = teamFilter,
+      .mask = fGOAL | fASTEROID | fBOUNDARY | fDETECTOR | teamFilter | enemyFilter });
+    ship.getComponent<DetectorComponent>().shape->setFilter({
+      .categories = fDETECTOR,
+      .mask = fGOAL | fASTEROID | enemyFilter });  //TODO figure out how to mask for all other teams
     if (withCamera) {
       auto bgSprite = Sprite().setImage(getResources(), "goldstartile.jpg");
       ship.addComponent(BackgroundCameraComponent(1, Colour4f(0.0f, 0.0f, 0.0f), 1, 0, bgSprite));
@@ -111,8 +122,8 @@ public:
     auto shape = std::make_shared<cp::CircleShape>(body, 50);
     shape->setSensor(true);
     shape->setFilter({
-      .categories = GOAL,
-      .mask = PLAYERDETECTOR | PLAYERHULL
+      .categories = fGOAL,
+      .mask = fDETECTOR | fTEAM0SHIP | fTEAM1SHIP
     });
     shape->setCollisionType(GOALBODY);
     auto sprite = Sprite()

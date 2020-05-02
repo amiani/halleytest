@@ -13,19 +13,19 @@ const torch::Device DEVICE(torch::kCUDA);
 bool isAnyNAN(const torch::Tensor&);
 
 enum BodyType {
-  PLAYERSHIPBODY,
+  SHIPBODY,
   PROJECTILEBODY,
-  ENEMYSHIPBODY,
   DETECTORBODY,
   ASTEROIDBODY,
   GOALBODY
 };
 
 enum CollisionFilter {
-  PLAYERHULL = (1u << 0),
-  PLAYERDETECTOR = (1u << 1),
-  PLAYERPROJECTILE = (1u << 2),
-  GOAL = (1u << 3),
-  ASTEROID = (1u << 4),
-  BOUNDARY = (1u << 5)
+  fTEAM0SHIP = (1u << 0),
+  fTEAM1SHIP = (1u << 1),
+  fDETECTOR = (1u << 2),
+  fPROJECTILE = (1u << 3),
+  fGOAL = (1u << 4),
+  fASTEROID = (1u << 5),
+  fBOUNDARY = (1u << 6),
 };

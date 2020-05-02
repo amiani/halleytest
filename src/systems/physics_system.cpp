@@ -1,6 +1,5 @@
 #include <any>
 #include "systems/physics_system.h"
-#include "chipmunk.hpp"
 #include "src/utils.h"
 
 class PhysicsSystem final : public PhysicsSystemBase<PhysicsSystem> {
@@ -89,14 +88,14 @@ public:
       sendMessage(detector, DetectMessage(other, false));
     });
 
-    space.addBeginCollisionHandler(GOALBODY, PLAYERSHIPBODY, [this](cp::Arbiter arb, auto& s) {
+    space.addBeginCollisionHandler(GOALBODY, SHIPBODY, [this](cp::Arbiter arb, auto& s) {
       auto player = getId(arb.getBodyB());
       sendMessage(player, ReachedGoalMessage());
       std::cout << "reached goal!!!\n";
       return false;
     });
 
-    space.addPostSolveCollisionHandler(PLAYERSHIPBODY, [this](cp::Arbiter arb, auto& s) {
+    space.addPostSolveCollisionHandler(SHIPBODY, [this](cp::Arbiter arb, auto& s) {
       auto player = getId(arb.getBodyA());
       auto ke = arb.totalKineticEnergy();
       sendMessage(player, ImpactMessage(ke));
@@ -121,7 +120,7 @@ public:
     auto body = std::make_shared<cp::StaticBody>();
     body->setPosition(pos);
     auto shape = std::make_shared<cp::SegmentShape>(body, a, b, 10);
-    shape->setFilter({ .categories = BOUNDARY });
+    shape->setFilter({ .categories = fBOUNDARY });
     world.createEntity()
       .addComponent(BodyComponent(body))
       .addComponent(ShapeComponent(shape));

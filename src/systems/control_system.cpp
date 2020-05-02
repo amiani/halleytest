@@ -1,3 +1,4 @@
+#include "components/team_component.h"
 #include "systems/control_system.h"
 #include "chipmunk.hpp"
 #include "src/game_stage.h"
@@ -28,6 +29,10 @@ public:
       if (other && other->isAlive()) {
         auto& bodyComponent = other->getComponent<BodyComponent>();
         auto& body = *bodyComponent.body;
+        auto teamComponent = other->tryGetComponent<TeamComponent>();
+        if (teamComponent && teamComponent->team != e.team.team) {
+          o.enemies.emplace_back(body, 100, ENEMY);
+        }
         //auto health = other->getComponent<HealthComponent>().health;
         o.detectedBodies.emplace_back(body, 10, NEUTRAL);
       }
