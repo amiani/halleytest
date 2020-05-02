@@ -1,4 +1,5 @@
 #include "systems/defensive_stat_system.h"
+
 using namespace Halley;
 
 class DefensiveStatSystem final : public DefensiveStatSystemBase<DefensiveStatSystem> {
@@ -9,6 +10,7 @@ public:
     e.health.health -= msg.kinetic;
     if (e.health.health <= 0) {
       getWorld().destroyEntity(e.entityId);
+      sendMessage(msg.attacker, KillMessage(e.entityId));
     }
   }
 

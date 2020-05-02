@@ -54,6 +54,7 @@ message:
   members:
     - kinetic: int
     - energy: int
+    - attacker: Halley::EntityId
 
 ---
 
@@ -62,6 +63,13 @@ message:
   members:
     - kinetic: int
     - energy: int
+
+---
+
+message:
+  name: Kill
+  members:
+    - victim: Halley::EntityId
 
 ---
 

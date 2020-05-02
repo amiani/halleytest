@@ -63,6 +63,7 @@ system:
     - FireWeapon: send
     - ReachedGoal: receive
     - Hit: receive
+    - Kill: receive
   access:
   - api
   - world

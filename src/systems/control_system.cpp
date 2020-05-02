@@ -79,6 +79,10 @@ public:
     e.observer->reward += msg.kinetic + msg.energy;
   }
 
+  void onMessageReceived(const KillMessage& msg, MainFamily& e) {
+    std::cout << "Scored a kill!!\n";
+  }
+
 private:
   bool reachedGoal = false;
   bool terminal = false;
