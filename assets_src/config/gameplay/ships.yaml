@@ -8,3 +8,12 @@ ships:
     hardpoints: [
       [25, 0]
     ]
+  - id: blue
+    image: ship1.png
+    radius: 32
+    pivot: [.5, .5]
+    mass: 1
+    detectorRadius: 960
+    hardpoints: [
+    [25, 0]
+    ]

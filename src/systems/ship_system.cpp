@@ -23,8 +23,8 @@ public:
   void init(){
     spawnPlayerShip(shipService->getShip("large_grey"), true, true, 0);
     spawnPlayerShip(shipService->getShip("large_grey"), true, false, 0);
-    spawnPlayerShip(shipService->getShip("large_grey"), true, false, 1);
-    spawnPlayerShip(shipService->getShip("large_grey"), true, false, 1);
+    spawnPlayerShip(shipService->getShip("blue"), true, false, 1);
+    spawnPlayerShip(shipService->getShip("blue"), true, false, 1);
   }
 
   void update(Time t) {}
