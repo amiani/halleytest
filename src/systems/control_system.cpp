@@ -7,22 +7,26 @@
 class ControlSystem final : public ControlSystemBase<ControlSystem> {
 public:
   void update(Halley::Time time) {
+    if (frames >= 3600) limitTerminal = true;
     for (auto& e : mainFamily) {
       if (frames % 8 == 0) {
-        if (frames >= 300) terminal = true;
-        updateController(time, e, terminal);
-        if (terminal) {
-          getAPI().core->setStage(std::make_unique<GameStage>());
+        updateController(time, e, limitTerminal);
+        if (e.health.health <= 0) {
+          getWorld().destroyEntity(e.entityId);
         }
       }
       applyAction(e);
     }
-    frames++;
+    if (limitTerminal) {
+      getAPI().core->setStage(std::make_unique<GameStage>());
+    }
+    ++frames;
   }
 
-  Observation makeObservation(MainFamily& e, bool isTerminal) {
-    Observation o(SelfState(*e.body.body, e.health.health));
-    o.terminal = isTerminal;
+  Observation makeObservation(MainFamily& e, bool limitTerminal) {
+    auto health = std::max(0, e.health.health);
+    Observation o(SelfState(*e.body.body, health));
+    o.terminal = limitTerminal || health == 0;
     for (auto& id : e.detector.entities) {
       auto other = getWorld().tryGetEntity(id);
       if (other && other->isAlive()) {
@@ -72,11 +76,6 @@ public:
     }
   }
 
-  void onMessageReceived(const ReachedGoalMessage& msg, MainFamily& e) {
-    terminal = true;
-    reachedGoal = true;
-  }
-
   void onMessageReceived(const HitMessage& msg, MainFamily& e) {
     e.observer->reward += .8 * (msg.physical + msg.energy);
   }
@@ -89,9 +88,13 @@ public:
     e.observer->reward -= msg.physical + msg.energy;
   }
 
+  void onMessageReceived(const WipeMessage& msg, MainFamily& e) {
+    limitTerminal = true;
+  }
+
 private:
   bool reachedGoal = false;
-  bool terminal = false;
+  bool limitTerminal = false;
   unsigned long long frames = 0;
 };
 

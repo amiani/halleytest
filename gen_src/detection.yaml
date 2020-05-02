@@ -6,13 +6,6 @@ component:
 
 ---
 
-component:
-  name: Team
-  members:
-    - team: int
-
----
-
 message:
   name: Detect
   members:

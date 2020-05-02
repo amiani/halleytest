@@ -1,0 +1,20 @@
+component:
+  name: Team
+  members:
+    - team: int
+
+---
+
+message:
+  name: Wipe
+
+---
+
+system:
+  name: Team
+  families:
+    - main:
+        - Team: read
+  strategy: global
+  messages:
+    - Wipe: send

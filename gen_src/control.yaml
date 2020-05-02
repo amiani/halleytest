@@ -61,10 +61,10 @@ system:
     - ControllerService
   messages:
     - FireWeapon: send
-    - ReachedGoal: receive
     - Hit: receive
     - Kill: receive
     - Damage: receive
+    - Wipe: receive
   access:
   - api
   - world
