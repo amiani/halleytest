@@ -44,6 +44,8 @@ public:
     auto body = e.body.body;
     if (e.observer.hasValue()) {
       auto observation = makeObservation(e, isTerminal);
+      auto reward = e.observer->reward;
+      reward -= e.health.health <= 0 ? 100 : 0;
       e.shipControl.lastAction = e.shipControl.controller->update(time, observation, 0);
     } else {
       e.shipControl.lastAction = e.shipControl.controller->update(time);
@@ -80,7 +82,7 @@ public:
   }
 
   void onMessageReceived(const KillMessage& msg, MainFamily& e) {
-    std::cout << "Scored a kill!!\n";
+    e.observer->reward += 100;
   }
 
   void onMessageReceived(const DamageMessage& msg, MainFamily& e) {
