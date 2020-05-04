@@ -11,6 +11,7 @@ cp::Vect halleyToChip(const Halley::Vector2f);
 
 const torch::Device DEVICE(torch::kCUDA);
 bool isAnyNAN(const torch::Tensor&);
+bool isAnyZero(const torch::Tensor&);
 
 enum BodyType {
   SHIPBODY,

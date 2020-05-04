@@ -23,3 +23,7 @@ cp::Vect halleyToChip(Halley::Vector2f v) {
 bool isAnyNAN(const torch::Tensor& t) {
   return torch::isnan(t).any().item<bool>();
 }
+
+bool isAnyZero(const torch::Tensor& t) {
+  return t.eq(0).any().item<bool>();
+}
