@@ -37,7 +37,7 @@ public:
           o.enemies.emplace_back(body, 100, ENEMY);
         }
         //auto health = other->getComponent<HealthComponent>().health;
-        o.detectedBodies.emplace_back(body, 10, NEUTRAL);
+        o.detectedBodies.emplace_back(body, 10, ALLY);
       }
     }
     o.uuid = e.shipControl.controller->getUUID();
@@ -49,25 +49,30 @@ public:
     if (e.observer.hasValue()) {
       auto observation = makeObservation(e, isTerminal);
       auto reward = e.observer->reward;
-      reward -= e.health.health <= 0 ? 100 : 0;
-      e.shipControl.lastAction = e.shipControl.controller->update(time, observation, 0);
+      reward += e.health.health <= 0 ? -1 : 0;
+      if (body->getPosition().length() > 1920/2) {
+        reward += -.005;
+      }
+      e.shipControl.lastAction = e.shipControl.controller->update(time, observation, reward);
     } else {
       e.shipControl.lastAction = e.shipControl.controller->update(time);
     }
+    e.observer->reward = 0;
   }
 
   void applyAction(MainFamily& e) {
     auto& a = e.shipControl.lastAction;
     auto& body = e.body.body;
     if (a.throttle) {
-      body->applyForceAtLocalPoint(cp::Vect(200, 0), cp::Vect(0, 0));
+      body->applyForceAtLocalPoint(cp::Vect(300, 0), cp::Vect(0, 0));
     }
-    if (a.direction == LEFT) {
+    auto angularVelocity = body->getAngularVelocity();
+    if (a.direction == LEFT && angularVelocity >= -2) {
       body->setTorque(-10000);
-    } else if (a.direction == RIGHT) {
+    } else if (a.direction == RIGHT && angularVelocity <= 2) {
       body->setTorque(10000);
     } else {
-      auto damping = -5000*body->getAngularVelocity();
+      auto damping = -5000 * angularVelocity;
       body->setTorque(damping);
     }
 
@@ -77,15 +82,15 @@ public:
   }
 
   void onMessageReceived(const HitMessage& msg, MainFamily& e) {
-    e.observer->reward += .8 * (msg.physical + msg.energy);
+    e.observer->reward += (.8 * (msg.physical + msg.energy)) / 100;
   }
 
   void onMessageReceived(const KillMessage& msg, MainFamily& e) {
-    e.observer->reward += 100;
+    e.observer->reward += .8;
   }
 
   void onMessageReceived(const DamageMessage& msg, MainFamily& e) {
-    e.observer->reward -= msg.physical + msg.energy;
+    e.observer->reward += -(msg.physical + msg.energy) / 100.f;
   }
 
   void onMessageReceived(const WipeMessage& msg, MainFamily& e) {

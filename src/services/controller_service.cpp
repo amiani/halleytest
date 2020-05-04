@@ -4,8 +4,8 @@
 #include "controller_service.h"
 #include "src/control/controller.h"
 
-ControllerService::ControllerService(String actorPath, String critic1Path, String critic2Path)
-  : actorPath(actorPath), critic1Path(critic1Path), critic2Path(critic2Path), actor(std::make_shared<SACActor>()){}
+ControllerService::ControllerService(bool loadFromDisk, bool train)
+  : replayBuffer(std::make_shared<ReplayBuffer>(loadFromDisk)), actor(std::make_shared<SACActor>(*replayBuffer, loadFromDisk, train)) {}
 
 std::shared_ptr<InputController> ControllerService::makeInputController(
   InputVirtual& device,

@@ -11,7 +11,7 @@ class Trainer {
 public:
   Trainer(){};
   Trainer(std::shared_ptr<Actor>);
-  virtual void addStep(const Observation& o, const Action& a, float r) =0;
+  virtual void addStep(Halley::UUID id, Tensor& o, Tensor& a, float r, bool terminal) =0;
   virtual void improve() =0;
 
 protected:

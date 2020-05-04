@@ -6,7 +6,7 @@ class PhysicsSystem final : public PhysicsSystemBase<PhysicsSystem> {
 public:
   void init() {
     addCollisionHandlers();
-    addBoundaries();
+    //addBoundaries();
   }
 
   void update(Halley::Time time) {

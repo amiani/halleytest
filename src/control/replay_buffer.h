@@ -29,14 +29,17 @@ struct Batch {
 
 class ReplayBuffer {
 public:
+  ReplayBuffer(bool loadFromDisk);
   Batch sample(int size);
-  void addStep(Observation o, Action a, float r);
+  void addStep(Halley::UUID id, Tensor o, Tensor a, float r, bool terminal);
   void printMeanReturn(uint numReturns);
   int size();
+  const Tensor& getObsMean();
+  const Tensor& getObsStd();
 
-private:
   Tensor obsMean;
   Tensor obsStd;
+private:
   std::vector<std::unique_ptr<Trajectory>> trajectories;
   struct Hasher {
     size_t operator()(const Halley::UUID& uuid) const { return std::hash<std::string>()(uuid.toString().cppStr()); }

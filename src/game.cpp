@@ -13,9 +13,8 @@ void initAsioPlugin(IPluginRegistry &registry);
 void SpaceGame::init(const Environment& env, const Vector<String>& args) {
   if (!args.empty()) {
     fps = std::stoi(args[0]);
-    actorPath = args[1];
-    critic1Path = args[2];
-    critic2Path = args[3];
+    std::istringstream(args[1]) >> loadFromDisk;
+    std::istringstream(args[2]) >> train;
   }
 }
 
@@ -87,7 +86,7 @@ std::unique_ptr<Stage> SpaceGame::startGame(const HalleyAPI* api)
 	api->audio->setListener(AudioListenerData(Vector3f(192, 108, -20), 200));
 
 	inputService = std::make_shared<InputService>(*api->input);
-	controllerService = std::make_shared<ControllerService>(actorPath, critic1Path, critic2Path);
+	controllerService = std::make_shared<ControllerService>(loadFromDisk, train);
 
 	return std::make_unique<GameStage>();
 }

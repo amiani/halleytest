@@ -12,13 +12,15 @@
 using namespace torch;
 
 class SACActor : public Actor {
-  std::shared_ptr<nn::Sequential> net;
   int hiddenWidth = 256;
+  nn::Sequential net;
+  const Tensor& obsMean;
+  const Tensor& obsStd;
 
 public:
-  SACActor();
+  SACActor(ReplayBuffer&, bool loadFromDisk, bool train = true, bool deterministic = false);
   Action act(const Observation& o, float r) override;
-  bool deterministic = false;
+  bool deterministic;
   bool train = true;
   SACTrainer trainer;
 };

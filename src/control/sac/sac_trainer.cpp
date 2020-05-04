@@ -4,26 +4,35 @@
 
 #include "sac_trainer.h"
 
-SACTrainer::SACTrainer(std::shared_ptr<nn::Sequential> actor)
+SACTrainer::SACTrainer(nn::Sequential& actor, ReplayBuffer& buffer, bool loadFromDisk)
   : actor(actor),
+  replayBuffer(buffer),
   critic1(makeCritic()),
   critic2(makeCritic()),
   target1(makeCritic()),
   target2(makeCritic()),
   logTemp(tensor(log(1), TensorOptions(DEVICE))),
   temp(tensor(1, TensorOptions(DEVICE))),
-  actorOptimizer((*actor)->parameters(), optim::AdamOptions(LR)),
+  actorOptimizer(actor->parameters(), optim::AdamOptions(LR)),
   critic1Optimizer(critic1->parameters(true), optim::AdamOptions(LR)),
   critic2Optimizer(critic2->parameters(true), optim::AdamOptions(LR)),
   tempOptimizer({logTemp}, optim::AdamOptions(LR)) {
 
   logTemp.requires_grad_(true);
+  if (loadFromDisk) {
+    load(critic1, "critic1.pt");
+    load(critic1, "critic2.pt");
+    load(target1, "target1.pt");
+    load(target2, "target2.pt");
+    load(logTemp, "logtemp.pt");
+  } else {
+    save(critic1, "temp");
+    load(target1, "temp");
+    save(critic2, "temp");
+    load(target2, "temp");
+  }
   critic1->to(DEVICE);
   critic2->to(DEVICE);
-  save(critic1, "temp");
-  load(target1, "temp");
-  save(critic2, "temp");
-  load(target2, "temp");
   target1->to(DEVICE);
   target2->to(DEVICE);
   for (auto& p : target1->parameters(true)) { p.requires_grad_(false); }
@@ -31,16 +40,16 @@ SACTrainer::SACTrainer(std::shared_ptr<nn::Sequential> actor)
 }
 
 
-void SACTrainer::addStep(const Observation& o, const Action& a, float r) {
-  replayBuffer.addStep(o, a, r);
-  if (replayBuffer.size() > 256 && replayBuffer.size() % 4 == 0) {
+void SACTrainer::addStep(Halley::UUID id, Tensor& o, Tensor& a, float r, bool terminal) {
+  replayBuffer.addStep(id, o, a, r, terminal);
+  if (replayBuffer.size() > 512 && replayBuffer.size() % 4 == 0) {
     improve();
   }
 }
 
 unsigned long long improvements = 0;
 void SACTrainer::improve() {
-  auto batch = replayBuffer.sample(256);
+  auto batch = replayBuffer.sample(512);
   updateCritics(batch);
   auto logpi = updateActor(batch);
   updateTemp(logpi);
@@ -48,8 +57,16 @@ void SACTrainer::improve() {
   updateTargets(target2, critic2);
   if (improvements % 1000 == 0) {
     std::cout << "temp: " << temp.item<float>() << std::endl;
+    std::cout << "points in buffer: " << replayBuffer.size() << "\n";
     replayBuffer.printMeanReturn(5);
-    save(*actor, "latestactor.pt");
+    save(actor, "actor.pt");
+    save(critic1, "critic1.pt");
+    save(critic2, "critic2.pt");
+    save(target1, "target1.pt");
+    save(target2, "target2.pt");
+    save(logTemp, "logtemp.pt");
+    save(replayBuffer.getObsMean(), "obsmean.pt");
+    save(replayBuffer.getObsStd(), "obsstd.pt");
   }
   ++improvements;
 }
@@ -58,7 +75,7 @@ void SACTrainer::updateCritics(Batch& batch) {
   Tensor target;
   {
     NoGradGuard guard;
-    auto logpi = (*actor)->forward(batch.next);
+    auto logpi = actor->forward(batch.next);
     auto pi = logpi.exp();
     auto qnext1 = target1->forward(batch.next);
     auto qnext2 = target2->forward(batch.next);
@@ -81,7 +98,13 @@ void SACTrainer::updateCritics(Batch& batch) {
 }
 
 Tensor SACTrainer::updateActor(Batch& batch) {
-  auto logpi = (*actor)->forward(batch.observation);
+  /*
+  std::cout << "obsMean: " << replayBuffer.obsMean << "\n";
+  std::cout << "\nnormalized sum: " << ((test - replayBuffer.obsMean) / replayBuffer.obsStd).sum().item<float>();
+  auto test1 = actor->forward(((test - replayBuffer.obsMean) / replayBuffer.obsStd).to(DEVICE));
+  std::cout << test1 << "\n";
+   */
+  auto logpi = actor->forward(batch.observation);
   auto pi = logpi.exp();
   auto q1 = critic1->forward(batch.observation);
   auto q2 = critic2->forward(batch.observation);
@@ -94,6 +117,12 @@ Tensor SACTrainer::updateActor(Batch& batch) {
 }
 
 void SACTrainer::updateTemp(Tensor& logpi) {
+  /*
+  std::cout << logpi << "\n";
+  if (isAnyZero(logpi)) {
+    std::cout << "\nbatch entropy: " << sum(logpi.exp() * logpi, {1});
+  }
+   */
   auto loss = (-logTemp * (sum(logpi.exp() * logpi, {1}).detach() + entropyTarget)).mean();
   tempOptimizer.zero_grad();
   loss.backward();

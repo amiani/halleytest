@@ -21,4 +21,5 @@ public:
     }
   }
 };
+
 REGISTER_SYSTEM(TeamSystem)

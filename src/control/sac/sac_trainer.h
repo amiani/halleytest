@@ -12,9 +12,10 @@ using namespace torch;
 
 class SACTrainer : public Trainer {
 public:
-  SACTrainer(std::shared_ptr<nn::Sequential> actor);
-  void addStep(const Observation& o, const Action& a, float r);
+  SACTrainer(nn::Sequential& actor, ReplayBuffer& replayBuffer, bool loadFromDisk);
+  void addStep(Halley::UUID id, Tensor& o, Tensor& a, float r, bool terminal) override;
   void improve() override;
+  Tensor test = torch::zeros({Observation::dim});
 
 private:
   static const float GAMMA;
@@ -23,13 +24,13 @@ private:
   int hiddenWidth = 256;
   Tensor logTemp;
   Tensor temp;
-  float entropyTarget = .8 * -log(1.f / Action::dim);
+  float entropyTarget = .9 * -log(1.f / Action::dim);
 
-  std::shared_ptr<nn::Sequential> actor;
+  nn::Sequential& actor;
   nn::Sequential critic1, critic2, target1, target2;
   optim::Adam actorOptimizer, critic1Optimizer, critic2Optimizer, tempOptimizer;
 
-  ReplayBuffer replayBuffer;
+  ReplayBuffer& replayBuffer;
 
   void updateCritics(Batch& batch);
   Tensor updateActor(Batch& batch);

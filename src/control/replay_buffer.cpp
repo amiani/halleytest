@@ -5,6 +5,15 @@
 #include <src/utils.h>
 #include "src/control/replay_buffer.h"
 
+ReplayBuffer::ReplayBuffer(bool loadFromDisk)
+: obsMean(torch::zeros({Observation::dim})),
+  obsStd(torch::ones({Observation::dim})) {
+  if (loadFromDisk) {
+    load(obsMean, "obsmean.pt");
+    load(obsStd, "obsstd.pt");
+  }
+}
+
 Batch ReplayBuffer::sample(int size) {
   std::vector<Tensor> o;
   std::vector<Tensor> a;
@@ -32,55 +41,51 @@ Batch ReplayBuffer::sample(int size) {
     }
   }
 
-  auto observation = stack(o).to(DEVICE);
-  auto action = stack(a).to(DEVICE);
-  auto reward = torch::from_blob(r.data(), {r.size()}).to(DEVICE);
-  auto nextObservation = stack(n).to(DEVICE);
-  auto done = torch::from_blob(d.data(), {d.size()}, TensorOptions().dtype(ScalarType::Int)).to(DEVICE);
+  auto observation = (stack(o) - obsMean) / obsStd;
+  auto action = stack(a);
+  auto reward = torch::from_blob(r.data(), {r.size()});
+  auto nextObservation = (stack(n) - obsMean) / obsStd;
+  auto done = torch::from_blob(d.data(), {d.size()}, TensorOptions().dtype(ScalarType::Int));
   return {
-    observation.clone(),
-    action.clone(),
-    reward.clone(),
-    nextObservation.clone(),
-    done.clone()
+    observation.to(DEVICE),
+    action.to(DEVICE),
+    reward.to(DEVICE),
+    nextObservation.to(DEVICE),
+    done.to(DEVICE)
   };
 }
 
-void ReplayBuffer::addStep(Observation o, Action a, float r) {
+void ReplayBuffer::addStep(Halley::UUID id, Tensor o, Tensor a, float r, bool terminal) {
   ++size_;
   ++totalObservations;
-  if (size_ > 200000) {
+  if (size_ > 900000) {
     size_ -= (*trajectories.begin())->size();
     trajectories.erase(trajectories.begin());
+    std::cout << "ejecting old data\n";
   }
-
-  auto observation = o.toTensor();
-  auto action = a.tensor;
 
   //calculate running stats
   if (totalObservations == 1) {
-    obsMean = observation.clone();
-    obsStd = torch::zeros_like(observation) + 1e-8;
+    obsMean = o.clone();
+    obsStd = torch::zeros_like(o) + 1e-8;
   } else {
-    auto meanclone = obsMean.clone();
-    obsMean += (observation - obsMean) / totalObservations;
-    obsStd += (observation - meanclone) * (observation - obsMean);
-    observation -= obsMean;
-    observation /= obsStd;
+    auto meanprev = obsMean.clone();
+    obsMean += (o - obsMean) / totalObservations;
+    obsStd += (o - meanprev) * (o - obsMean);
   }
 
-  auto trajIter = trajMap.find(o.uuid);
+  auto trajIter = trajMap.find(id);
   if (trajIter == trajMap.end()) {
-    auto& traj = trajectories.emplace_back(new Trajectory{{ observation, action, 0, o.terminal }});
-    trajMap[o.uuid] = traj.get();
+    auto& traj = trajectories.emplace_back(new Trajectory{{ o, a, 0, terminal }});
+    trajMap[id] = traj.get();
   } else {
     trajIter->second->back().reward = r;
-    trajIter->second->push_back({ observation, action, 0, o.terminal });
+    trajIter->second->push_back({ o, a, 0, terminal });
   }
 }
 
 void ReplayBuffer::printMeanReturn(uint numReturns) {
-  if (numReturns < trajectories.size()) {
+  if (numReturns < trajectories.size() - 4) {
     float meanReturn = 0;
     auto traj = trajectories.begin();
     while ((*traj)->back().terminal) {
@@ -98,3 +103,6 @@ void ReplayBuffer::printMeanReturn(uint numReturns) {
 int ReplayBuffer::size() {
   return size_;
 }
+
+const Tensor& ReplayBuffer::getObsMean() { return obsMean; }
+const Tensor& ReplayBuffer::getObsStd() { return obsStd; }

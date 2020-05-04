@@ -51,12 +51,14 @@ torch::Tensor Observation::toTensor() const {
   auto selfData = self.toArray();
   iter = std::copy(selfData.begin(), selfData.end(), iter);
 
-  for (auto& enemy : enemies) {
-    auto enemyData = enemy.toArray();
+  auto size = detectedBodies.size();
+  for (int i = 0; i != numDetected && i != size; ++i) {
+    auto enemyData = enemies[i].toArray();
     iter = std::copy(enemyData.begin(), enemyData.end(), iter);
   }
+  iter += std::max(0lu, numDetected - size) * EntityState::dim;
 
-  auto size = detectedBodies.size();
+  size = detectedBodies.size();
   for (int i = 0; i != numDetected && i != size; ++i) {
     auto entData = detectedBodies[i].toArray();
     iter = std::copy(entData.begin(), entData.end(), iter);

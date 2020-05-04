@@ -9,6 +9,7 @@
 class AsteroidSystem final : public AsteroidSystemBase<AsteroidSystem> {
 public:
   void init() {
+    /*
     spawnAsteroid(getAsteroidService().any());
     spawnAsteroid(getAsteroidService().any());
     spawnAsteroid(getAsteroidService().any());
@@ -18,6 +19,7 @@ public:
     spawnAsteroid(getAsteroidService().any());
     spawnAsteroid(getAsteroidService().any());
     spawnAsteroid(getAsteroidService().any());
+     */
   }
 
   void update(Halley::Time t) {
@@ -31,8 +33,8 @@ public:
     body->setPosition(pos);
     auto shape = std::make_shared<cp::CircleShape>(body, config.radius);
     shape->setFilter({
-      .categories = ASTEROID,
-      .mask = PLAYERHULL | PLAYERPROJECTILE | PLAYERDETECTOR });
+      .categories = fASTEROID,
+      .mask = fTEAM0SHIP | fTEAM1SHIP | fPROJECTILE | fDETECTOR });
     shape->setCollisionType(ASTEROIDBODY);
     getWorld().createEntity()
       .addComponent(HealthComponent(10))

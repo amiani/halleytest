@@ -48,7 +48,8 @@ struct Observation {
   std::vector<EntityState> detectedBodies;
   //EntityData allies[1];
   torch::Tensor toTensor() const;
-  inline static const int numDetected = 10;
-  inline static const int dim = SelfState::dim + EntityState::dim + EntityState::dim * numDetected;
+  inline static const int numEnemies = 2;
+  inline static const int numDetected = 2;
+  inline static const int dim = SelfState::dim + EntityState::dim * numEnemies + EntityState::dim * numDetected;
 };
 
